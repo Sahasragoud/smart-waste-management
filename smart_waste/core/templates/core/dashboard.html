@@ -1,15 +1,19 @@
 {% extends 'core/base.html' %}
-
 {% block content %}
-<div class="container mt-5">
-    <h2>Welcome, {{ user.username }}!</h2>
+<h2>Dashboard</h2>
+<p>Total Uploads: {{ stats.total_uploads }}</p>
+<p>Organic: {{ stats.organic }}</p>
+<p>Recyclable: {{ stats.recyclable }}</p>
+<p>Hazardous: {{ stats.hazardous }}</p>
 
-    {% if welcome_message %}
-        <div class="alert alert-success">
-            {{ welcome_message }}
-        </div>
-    {% endif %}
+<a href="{% url 'upload' %}" class="btn btn-primary">Upload New File</a>
 
-    <p>This is your dashboard.</p>
-</div>
+<h3>Your Uploads</h3>
+<ul>
+    {% for u in uploads %}
+        <li>{{ u.file.name }} ({{ u.category }}) - {{ u.uploaded_at }}</li>
+    {% empty %}
+        <li>No uploads yet.</li>
+    {% endfor %}
+</ul>
 {% endblock %}

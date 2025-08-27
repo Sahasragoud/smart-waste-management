@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django import forms
+from .models import WasteUpload
+
 
 # -----------------------------
 # Registration Form
@@ -39,3 +42,12 @@ class LoginForm(AuthenticationForm):
         'class': 'form-control',
         'placeholder': 'Password'
     }))
+
+class WasteUploadForm(forms.ModelForm):
+    class Meta:
+        model = WasteUpload
+        fields = ['file', 'category']
+        widgets = {
+            'category': forms.Select(attrs={'class': 'form-control'}),
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control'})
+        }

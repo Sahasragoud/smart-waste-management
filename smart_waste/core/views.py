@@ -3,20 +3,25 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
-from .forms import LoginForm, RegisterForm
+from .forms import LoginForm, RegisterForm, WasteUploadForm
 from django.contrib.auth import login, logout
-
+from .models import WasteUpload
 def home(request):
     return render(request, 'core/home.html')
 
+@login_required
 def upload_file(request):
-    if request.method == 'POST' and request.FILES.get('waste_file'):
-        uploaded_file = request.FILES['waste_file']
-        fs = FileSystemStorage()
-        filename = fs.save(uploaded_file.name, uploaded_file)
-        messages.success(request, f'File "{filename}" uploaded successfully!')
-        return redirect('home')
-    return redirect('home')
+    if request.method == 'POST':
+        form = WasteUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            waste = form.save(commit=False)
+            waste.user = request.user
+            waste.save()
+            messages.success(request, 'File uploaded successfully!')
+            return redirect('dashboard')
+    else:
+        form = WasteUploadForm()
+    return render(request, 'core/upload.html', {'form': form})
 
 1
 def login_view(request):
@@ -56,5 +61,13 @@ def dashboard_view(request):
     if request.session.pop('is_new_user', False):
         # You can show a special welcome message or tutorial
         context['welcome_message'] = f"Welcome {user.username}! Glad to have you on Smart Waste."
-
-    return render(request, 'core/dashboard.html', context)
+        
+    uploads = WasteUpload.objects.filter(user = request.user).order_by('-uploaded_at')
+    
+    stats = {
+        'total_uploads': uploads.count(),
+        'organic': uploads.filter(category='Organic').count(),
+        'recyclable': uploads.filter(category='Recyclable').count(),
+        'hazardous': uploads.filter(category='Hazardous').count(),
+    }
+    return render(request, 'core/dashboard.html', {'uploads': uploads, 'stats': stats, 'context' : context})
