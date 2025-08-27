@@ -1,0 +1,15 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Welcome, {{ user.username }}!</h2>
+
+    {% if welcome_message %}
+        <div class="alert alert-success">
+            {{ welcome_message }}
+        </div>
+    {% endif %}
+
+    <p>This is your dashboard.</p>
+</div>
+{% endblock %}

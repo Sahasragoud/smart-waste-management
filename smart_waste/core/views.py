@@ -18,17 +18,7 @@ def upload_file(request):
         return redirect('home')
     return redirect('home')
 
-def register_view(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('dashboard')
-    else:
-        form = RegisterForm(request=request)
-    return render(request, 'core/register.html', {'form': form})
-
+1
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -43,3 +33,28 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('home')
+
+def register_view(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()  # Create the new user
+            login(request, user)  # Log the user in immediately
+            request.session['is_new_user'] = True
+            return redirect('dashboard')  # Redirect to dashboard after login
+    else:
+        form = RegisterForm()
+    
+    return render(request, 'core/signup.html', {'form': form})
+
+@login_required(login_url='login')
+def dashboard_view(request):
+    user = request.user
+    context = {'user': user}
+
+    # Check if new user
+    if request.session.pop('is_new_user', False):
+        # You can show a special welcome message or tutorial
+        context['welcome_message'] = f"Welcome {user.username}! Glad to have you on Smart Waste."
+
+    return render(request, 'core/dashboard.html', context)
