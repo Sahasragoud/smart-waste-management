@@ -5,9 +5,19 @@ from django.core.files.storage import FileSystemStorage
 from django.contrib import messages
 from .forms import LoginForm, RegisterForm, WasteUploadForm
 from django.contrib.auth import login, logout
-from .models import WasteUpload
+from .models import WasteUpload, UserProfile
+import random
+from .ml_model import model
+from tensorflow.keras.preprocessing import image
+import numpy as np
+
 def home(request):
     return render(request, 'core/home.html')
+
+def predict_category(file):
+    # Randomly choose a category as a placeholder
+    categories = ['Organic', 'Recyclable', 'Hazardous', 'Other']
+    return random.choice(categories)
 
 @login_required
 def upload_file(request):
@@ -16,14 +26,25 @@ def upload_file(request):
         if form.is_valid():
             waste = form.save(commit=False)
             waste.user = request.user
+            # Mock AI prediction
+            waste.category = predict_category(waste.file)
             waste.save()
-            messages.success(request, 'File uploaded successfully!')
+
+            # Reward points (mock)
+            profile = request.user.userprofile
+            profile.points += 10  # e.g., 10 points per successful upload
+            profile.save()
+
+            messages.success(
+                request,
+                f'File uploaded! Category predicted: {waste.category}. You earned 10 points!'
+            )
             return redirect('dashboard')
     else:
         form = WasteUploadForm()
+
     return render(request, 'core/upload.html', {'form': form})
 
-1
 def login_view(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
@@ -55,6 +76,9 @@ def register_view(request):
 @login_required(login_url='login')
 def dashboard_view(request):
     user = request.user
+    
+    profile, created = UserProfile.objects.get_or_create(user=user)
+
     context = {'user': user}
 
     # Check if new user
@@ -70,4 +94,16 @@ def dashboard_view(request):
         'recyclable': uploads.filter(category='Recyclable').count(),
         'hazardous': uploads.filter(category='Hazardous').count(),
     }
-    return render(request, 'core/dashboard.html', {'uploads': uploads, 'stats': stats, 'context' : context})
+    
+    points = user.userprofile.points
+    return render(request, 'core/dashboard.html', {'uploads': uploads, 'stats': stats, 'points' : points,'context' : context})
+
+
+def predict_category(img_path):
+    img = image.load_img(img_path, target_size=(224, 224))
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0) / 255.0
+
+    pred = model.predict(img_array)
+    categories = ['Hazardous', 'Non-Recyclable', 'Organic', 'Recyclable']
+    return categories[np.argmax(pred)]
