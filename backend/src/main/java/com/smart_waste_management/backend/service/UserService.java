@@ -12,5 +12,4 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserService {
     public User updateUser(Long userId, UpdateProfileRequest profileRequest) throws UserNotFoundException;
-    public void deleteUser(Long userId) throws UserNotFoundException;
 }

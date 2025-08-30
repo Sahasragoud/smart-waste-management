@@ -25,9 +25,4 @@ public class UserController {
         return userService.updateUser(userId, profileRequest);
     }
 
-    @DeleteMapping("/{userId}")
-    public void deleteUser(@PathVariable Long userId) throws UserNotFoundException{
-        userService.deleteUser(userId);
-    }
-
 }

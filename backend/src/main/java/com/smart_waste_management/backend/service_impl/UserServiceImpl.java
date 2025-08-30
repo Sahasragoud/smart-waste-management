@@ -29,7 +29,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public User updateUser(Long userId, UpdateProfileRequest profileRequest) throws UserNotFoundException {
         User user = userRepository.findByEmail(profileRequest.getEmail());
-        if(user == null){
+        if(user == null) {
             throw new UserNotFoundException("User not found by email, " + profileRequest.getEmail());
         }
 
@@ -39,15 +39,7 @@ public class UserServiceImpl implements UserService {
         if(profileRequest.getPhoneNumber() != null) user.setPhoneNumber(profileRequest.getPhoneNumber());
         if(profileRequest.getDateOfBirth() != null) user.setDateOfBirth(LocalDate.parse(profileRequest.getDateOfBirth()));
 
-        return user;
+        return userRepository.save(user);
     }
 
-    @Override
-    public void deleteUser(Long userId) throws UserNotFoundException {
-        Optional<User> user = userRepository.findById(userId);
-        if(user.isEmpty()){
-            throw new UserNotFoundException("User not found by id, " + userId );
-        }
-        userRepository.deleteById(userId);
-    }
 }

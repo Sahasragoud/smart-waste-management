@@ -1,14 +1,12 @@
 package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.entity.User;
+import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/admin")
@@ -31,4 +29,10 @@ public class AdminController {
         Sort sortBy = Sort.by(direction,sortField);
         return adminService.getAllUsers(PageRequest.of(page,size,sortBy));
     }
+
+    @DeleteMapping("/{userId}")
+    public void deleteUser(@PathVariable Long userId) throws UserNotFoundException {
+        adminService.deleteUser(userId);
+    }
+
 }
