@@ -51,6 +51,7 @@ public class AdminController {
         adminService.deleteUser(userId);
     }
 
+    
     @GetMapping("/uploads")
     public Page<Uploads> getAllUploads(
             @RequestParam int page,
