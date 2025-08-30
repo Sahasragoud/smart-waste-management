@@ -33,8 +33,10 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setAddress(request.getAddress());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
-        user.setRole(Role.valueOf("USER"));
+        if(request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()){
+            user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
+        }
+        user.setRole(Role.USER);
         return userRepository.save(user);
     }
 

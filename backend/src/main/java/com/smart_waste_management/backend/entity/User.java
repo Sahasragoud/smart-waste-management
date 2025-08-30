@@ -2,6 +2,7 @@ package com.smart_waste_management.backend.entity;
 
 import com.smart_waste_management.backend.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -18,17 +19,21 @@ public class User {
     private Long id;
 
     @Column(nullable = false)
+    @NotBlank(message = "Username is Mandatory")
     private String username;
 
     @Column(nullable = false)
+    @NotBlank(message = "Email is mandatory")
     private String email;
 
     @Column(nullable = false)
+    @NotBlank(message = "Password is mandatory")
     private String password;
 
     private String phoneNumber;
 
     @Column(nullable = false)
+    @NotBlank(message = "Address is mandatory")
     private String address;
 
     @Column(name = "created_date")

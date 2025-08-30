@@ -20,14 +20,15 @@ public class AdminController {
     }
 
 
-    @GetMapping
+    @GetMapping("/users")
     public Page<User> getAllUsers(
             @RequestParam int page,
             @RequestParam int size,
             @RequestParam String sortField,
             @RequestParam String sortDirection
     ){
-        Sort sortBy = Sort.by(sortDirection,sortField);
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Sort sortBy = Sort.by(direction,sortField);
         return adminService.getAllUsers(PageRequest.of(page,size,sortBy));
     }
 }
