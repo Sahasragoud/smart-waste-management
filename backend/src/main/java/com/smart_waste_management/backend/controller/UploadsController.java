@@ -5,9 +5,13 @@ import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.UploadService;
+import jakarta.annotation.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("api/uploads")
@@ -66,9 +71,25 @@ public class UploadsController {
         return uploadService.getUploadsById(userId,PageRequest.of(page,size,sortBy));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @DeleteMapping("/{id}")
-    public void deleteUpload(@PathVariable Long id){
-        uploadService.deleteUpload(id);
+    @GetMapping("/{id}/image")
+    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable Long id) throws IOException {
+        // Fetch upload entity
+        Uploads upload = uploadService.getUploadById(id)
+                .orElseThrow(() -> new RuntimeException("Upload not found with id: " + id));
+
+        // Build path from DB
+        Path path = Paths.get(upload.getFilePath());
+        org.springframework.core.io.Resource resource = new UrlResource(path.toUri());
+
+        if (!resource.exists()) {
+            throw new RuntimeException("File not found on disk: " + upload.getFilePath());
+        }
+
+        // Detect media type dynamically
+        MediaType mediaType = MediaType.parseMediaType(upload.getFileType());
+
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .body(resource);
     }
 }

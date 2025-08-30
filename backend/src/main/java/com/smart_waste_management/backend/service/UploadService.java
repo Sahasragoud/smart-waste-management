@@ -8,9 +8,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public interface UploadService {
      UploadResponse createUpload(Long userId, UploadRequest request) throws UserNotFoundException;
     Page<Uploads> getUploadsById(Long userId,Pageable pageable) throws UserNotFoundException;
-    void deleteUpload(Long id);
+    Optional<Uploads> getUploadById(Long id);
 }

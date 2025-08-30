@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UploadsServiceImpl implements UploadService {
 
@@ -46,7 +48,7 @@ public class UploadsServiceImpl implements UploadService {
     }
 
     @Override
-    public void deleteUpload(Long id) {
-        uploadsRepository.deleteById(id);
+    public Optional<Uploads> getUploadById(Long id) {
+        return uploadsRepository.findById(id);
     }
 }

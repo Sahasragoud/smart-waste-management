@@ -51,7 +51,7 @@ public class AdminController {
         adminService.deleteUser(userId);
     }
 
-    
+
     @GetMapping("/uploads")
     public Page<Uploads> getAllUploads(
             @RequestParam int page,
@@ -63,5 +63,11 @@ public class AdminController {
         Sort sortBy = Sort.by(direction, sortField);
         return adminService.getAllUploads(PageRequest.of(page,size,sortBy));
     }
-    
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @DeleteMapping("/{id}")
+    public void deleteUpload(@PathVariable Long id){
+        adminService.deleteUpload(id);
+    }
+
 }

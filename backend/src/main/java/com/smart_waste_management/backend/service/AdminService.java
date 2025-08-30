@@ -14,5 +14,6 @@ public interface AdminService {
     public void deleteUser(Long userId) throws UserNotFoundException;
     public User createAdmin(RegisterRequest request);
     Page<Uploads> getAllUploads(Pageable pageable);
+    void deleteUpload(Long id);
 
 }
