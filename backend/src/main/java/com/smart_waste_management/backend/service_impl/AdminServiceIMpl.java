@@ -1,9 +1,11 @@
 package com.smart_waste_management.backend.service_impl;
 
 import com.smart_waste_management.backend.dto.RegisterRequest;
+import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.enums.Role;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
+import com.smart_waste_management.backend.repository.UploadsRepository;
 import com.smart_waste_management.backend.repository.UserRepository;
 import com.smart_waste_management.backend.service.AdminService;
 import org.springframework.data.domain.Page;
@@ -18,10 +20,12 @@ import java.util.Optional;
 public class AdminServiceIMpl implements AdminService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UploadsRepository uploadsRepository;
 
-    public AdminServiceIMpl(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public AdminServiceIMpl(UserRepository userRepository, PasswordEncoder passwordEncoder, UploadsRepository uploadsRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.uploadsRepository = uploadsRepository;
     }
 
     @Override
@@ -50,4 +54,10 @@ public class AdminServiceIMpl implements AdminService {
         admin.setRole(Role.ADMIN);
         return userRepository.save(admin);
     }
+
+    @Override
+    public Page<Uploads> getAllUploads(Pageable pageable) {
+        return uploadsRepository.findAll(pageable);
+    }
+
 }

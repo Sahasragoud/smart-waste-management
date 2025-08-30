@@ -1,6 +1,7 @@
 package com.smart_waste_management.backend.service_impl;
 
 import com.smart_waste_management.backend.dto.UploadRequest;
+import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
@@ -23,7 +24,7 @@ public class UploadsServiceImpl implements UploadService {
     }
 
     @Override
-    public Uploads createUpload(Long userId, UploadRequest request) throws UserNotFoundException {
+    public UploadResponse createUpload(Long userId, UploadRequest request) throws UserNotFoundException {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User Not found with id" + userId));
         Uploads upload = new Uploads();
@@ -32,12 +33,9 @@ public class UploadsServiceImpl implements UploadService {
         upload.setFileType(request.getFileType());
         upload.setFilePath(request.getFilePath());
         upload.setFileSize(Long.valueOf(request.getFileSize()));
-        return uploadsRepository.save(upload);
-    }
+        uploadsRepository.save(upload);
 
-    @Override
-    public Page<Uploads> getAllUploads(Pageable pageable) {
-        return uploadsRepository.findAll(pageable);
+        return new UploadResponse(upload.getFileName(), upload.getFileType(),  upload.getFileSize(),upload.getFilePath(), userId);
     }
 
     @Override

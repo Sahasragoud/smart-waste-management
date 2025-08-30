@@ -2,6 +2,7 @@ package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.dto.AuthResponse;
 import com.smart_waste_management.backend.dto.RegisterRequest;
+import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AdminService;
@@ -31,7 +32,7 @@ public class AdminController {
         return ResponseEntity.ok(response);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/users")
     public Page<User> getAllUsers(
             @RequestParam int page,
@@ -44,9 +45,22 @@ public class AdminController {
         return adminService.getAllUsers(PageRequest.of(page,size,sortBy));
     }
 
-    @DeleteMapping("/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("user/{userId}")
     public void deleteUser(@PathVariable Long userId) throws UserNotFoundException {
         adminService.deleteUser(userId);
     }
 
+    @GetMapping("/uploads")
+    public Page<Uploads> getAllUploads(
+            @RequestParam int page,
+            @RequestParam int size,
+            @RequestParam String sortField,
+            @RequestParam String sortDirection
+    ){
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Sort sortBy = Sort.by(direction, sortField);
+        return adminService.getAllUploads(PageRequest.of(page,size,sortBy));
+    }
+    
 }

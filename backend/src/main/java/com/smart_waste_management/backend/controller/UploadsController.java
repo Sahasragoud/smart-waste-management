@@ -1,6 +1,7 @@
 package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.dto.UploadRequest;
+import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.UploadService;
@@ -9,6 +10,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 @RestController
 @RequestMapping("api/uploads")
@@ -23,19 +30,26 @@ public class UploadsController {
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/user/{userId}")
-    public Uploads createUpload(@PathVariable Long userId, @RequestBody UploadRequest request) throws UserNotFoundException {
-        return uploadService.createUpload(userId,request);
-    }
+    public UploadResponse createUpload(@PathVariable Long userId,
+                                       @RequestParam("file") MultipartFile file
+    ) throws UserNotFoundException, IOException {
+        String uploadDir = "uploads/";
+        Path uploadPath = Paths.get(uploadDir);
 
-    @GetMapping
-    public Page<Uploads> getAllUploads(
-            @RequestParam int page,
-            @RequestParam int size,
-            @RequestParam String sortField,
-            @RequestParam String sortDirection
-    ){
-        Sort sortBy = Sort.by(sortDirection, sortField);
-        return uploadService.getAllUploads(PageRequest.of(page,size,sortBy));
+        if(!Files.exists(uploadPath)){
+            Files.createDirectories(uploadPath);
+        }
+
+        String filePath = uploadDir + System.currentTimeMillis() +"_" + file.getOriginalFilename();
+        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+
+        UploadRequest request = new UploadRequest();
+        request.setFileName(file.getOriginalFilename());
+        request.setFileType(file.getContentType());
+        request.setFileSize(String.valueOf(file.getSize()));
+        request.setFilePath(filePath);
+
+        return uploadService.createUpload(userId, request);
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
@@ -47,7 +61,8 @@ public class UploadsController {
             @RequestParam String sortField,
             @RequestParam String sortDirection
     ) throws UserNotFoundException {
-        Sort sortBy = Sort.by(sortDirection, sortField);
+        Sort.Direction direction = Sort.Direction.fromString(sortDirection);
+        Sort sortBy = Sort.by(direction, sortField);
         return uploadService.getUploadsById(userId,PageRequest.of(page,size,sortBy));
     }
 

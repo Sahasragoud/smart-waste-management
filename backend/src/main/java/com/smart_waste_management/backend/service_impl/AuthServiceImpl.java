@@ -36,6 +36,7 @@ public class AuthServiceImpl implements AuthService {
         if(request.getDateOfBirth() != null && !request.getDateOfBirth().isEmpty()){
             user.setDateOfBirth(LocalDate.parse(request.getDateOfBirth()));
         }
+        user.setRole(Role.USER);
         return userRepository.save(user);
     }
 
