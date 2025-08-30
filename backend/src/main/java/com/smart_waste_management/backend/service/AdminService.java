@@ -10,5 +10,4 @@ import org.springframework.stereotype.Service;
 public interface AdminService {
     public Page<User> getAllUsers(Pageable pageable);
     public void deleteUser(Long userId) throws UserNotFoundException;
-
 }
