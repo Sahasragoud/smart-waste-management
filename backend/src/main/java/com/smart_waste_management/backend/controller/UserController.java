@@ -1,7 +1,5 @@
 package com.smart_waste_management.backend.controller;
 
-import com.smart_waste_management.backend.dto.LoginRequest;
-import com.smart_waste_management.backend.dto.RegisterRequest;
 import com.smart_waste_management.backend.dto.UpdatePasswordRequest;
 import com.smart_waste_management.backend.dto.UpdateProfileRequest;
 import com.smart_waste_management.backend.entity.User;
@@ -9,9 +7,7 @@ import com.smart_waste_management.backend.exception.AccessDeniedException;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AuthService;
 import com.smart_waste_management.backend.service.UserService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,11 +18,13 @@ public class UserController {
         this.userService = userService;
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/{userId}/updateProfile")
     public User updateUser(@PathVariable Long userId, @RequestBody UpdateProfileRequest profileRequest) throws UserNotFoundException{
         return userService.updateUser(userId, profileRequest);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping("/{userId}/updatePassword")
     public User updatePassword(@PathVariable Long userId, @RequestBody UpdatePasswordRequest passwordRequest) throws UserNotFoundException, AccessDeniedException {
         return userService.updatePassword(userId, passwordRequest);

@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("api/uploads")
@@ -20,6 +21,7 @@ public class UploadsController {
         this.uploadService = uploadService;
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PostMapping("/user/{userId}")
     public Uploads createUpload(@PathVariable Long userId, @RequestBody UploadRequest request) throws UserNotFoundException {
         return uploadService.createUpload(userId,request);
@@ -36,6 +38,7 @@ public class UploadsController {
         return uploadService.getAllUploads(PageRequest.of(page,size,sortBy));
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{userId}")
     public Page<Uploads> getAllByUserId(
             @PathVariable Long userId,
@@ -48,10 +51,9 @@ public class UploadsController {
         return uploadService.getUploadsById(userId,PageRequest.of(page,size,sortBy));
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @DeleteMapping("/{id}")
     public void deleteUpload(@PathVariable Long id){
         uploadService.deleteUpload(id);
     }
-
-
 }

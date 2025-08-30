@@ -4,6 +4,7 @@ import com.smart_waste_management.backend.dto.AuthResponse;
 import com.smart_waste_management.backend.dto.LoginRequest;
 import com.smart_waste_management.backend.dto.RegisterRequest;
 import com.smart_waste_management.backend.entity.User;
+import com.smart_waste_management.backend.enums.Role;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AuthService;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody RegisterRequest request) {
         User user = authService.createUser(request);
+        user.setRole(Role.USER);
         AuthResponse response = new AuthResponse(
                 user.getId(), user.getUsername(), user.getEmail(), user.getRole().toString()
         );

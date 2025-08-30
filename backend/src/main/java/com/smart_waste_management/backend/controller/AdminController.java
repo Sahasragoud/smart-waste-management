@@ -1,11 +1,15 @@
 package com.smart_waste_management.backend.controller;
 
+import com.smart_waste_management.backend.dto.AuthResponse;
+import com.smart_waste_management.backend.dto.RegisterRequest;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AdminService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,6 +19,16 @@ public class AdminController {
 
     public AdminController(AdminService adminService) {
         this.adminService = adminService;
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/create")
+    public ResponseEntity<AuthResponse> createAdmin(@RequestBody RegisterRequest request){
+        User admin = adminService.createAdmin(request);
+        AuthResponse response = new AuthResponse(
+                admin.getId(),admin.getUsername(), admin.getEmail(), admin.getRole().toString()
+        );
+        return ResponseEntity.ok(response);
     }
 
 
