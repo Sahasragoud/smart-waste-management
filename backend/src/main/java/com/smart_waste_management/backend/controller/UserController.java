@@ -20,7 +20,6 @@ public class UserController {
         this.userService = userService;
     }
 
-
     @PutMapping("/{userId}/updateProfile")
     public User updateUser(@PathVariable Long userId, @RequestBody UpdateProfileRequest profileRequest) throws UserNotFoundException{
         return userService.updateUser(userId, profileRequest);

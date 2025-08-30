@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class LoginRequest {
     private String email;
+    private String password;
 
     public String getPassword() {
         return password;
@@ -24,6 +25,4 @@ public class LoginRequest {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    private String password;
 }
