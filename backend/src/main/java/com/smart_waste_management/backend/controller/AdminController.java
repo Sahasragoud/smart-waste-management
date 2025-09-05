@@ -27,7 +27,7 @@ public class AdminController {
     public ResponseEntity<AuthResponse> createAdmin(@RequestBody RegisterRequest request){
         User admin = adminService.createAdmin(request);
         AuthResponse response = new AuthResponse(
-                admin.getId(),admin.getUsername(), admin.getEmail(), admin.getRole().toString()
+                admin.getId(),admin.getUsername(), admin.getEmail(), admin.getRole().toString(),"-","-"
         );
         return ResponseEntity.ok(response);
     }

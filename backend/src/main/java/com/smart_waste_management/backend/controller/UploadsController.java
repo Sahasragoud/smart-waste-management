@@ -5,7 +5,6 @@ import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.UploadService;
-import jakarta.annotation.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

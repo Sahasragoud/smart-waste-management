@@ -2,6 +2,7 @@ package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.dto.AuthResponse;
 import com.smart_waste_management.backend.dto.LoginRequest;
+import com.smart_waste_management.backend.dto.LoginResponse;
 import com.smart_waste_management.backend.dto.RegisterRequest;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.enums.Role;
@@ -25,9 +26,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody RegisterRequest request) {
-        User user = authService.createUser(request);
+        LoginResponse loginResponse = authService.createUser(request);
+        User user = loginResponse.getUser();
+        String token = loginResponse.getToken();
+
         AuthResponse response = new AuthResponse(
-                user.getId(), user.getUsername(), user.getEmail(), user.getRole().toString()
+                user.getId(), user.getUsername(), user.getEmail(), user.getRole().toString(), token, "Bearer"
         );
         return ResponseEntity.ok(response);
     }
@@ -35,9 +39,12 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> loginUser(@RequestBody LoginRequest loginRequest) throws UserNotFoundException {
-        User user = authService.loginUser(loginRequest);
+        LoginResponse loginResponse = authService.loginUser(loginRequest);
+        User user = loginResponse.getUser();
+        String token = loginResponse.getToken();
+
         AuthResponse response = new AuthResponse(
-                user.getId(), user.getUsername(), user.getEmail(), user.getRole().name()
+                user.getId(), user.getUsername(), user.getEmail(), user.getRole().toString(), token, "Bearer"
         );
         return ResponseEntity.ok(response);
     }

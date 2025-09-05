@@ -20,10 +20,15 @@ public class SecurityConfig {
 
     // Spring Security 6+ way to configure HTTP security
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable()) // disable CSRF
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll()); // allow all requests
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter) throws Exception {
+        http.csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/**").permitAll() // allow register & login
+                        .anyRequest().authenticated()
+                )
+                .addFilterBefore(jwtFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
+
 }
