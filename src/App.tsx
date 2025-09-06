@@ -1,7 +1,8 @@
+// src/App.tsx
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-
+import AdminDashboard from "./pages/AdminDashboard";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -10,6 +11,11 @@ import Results from "./pages/Results";
 import Centers from "./pages/Centers";
 import Rewards from "./pages/Rewards";
 import Dashboard from "./pages/Dashboard";
+import ForgotPassword from "./pages/ForgotPassword";
+import ProtectedRoute from "./components/protectedRoute";
+import Users from "./pages/users";
+import Uploads from "./pages/uploads";
+import RewardsAdmin from "./pages/RewardsAdmin.tsx";
 
 function App() {
   return (
@@ -18,14 +24,63 @@ function App() {
 
       <main className="flex-1 p-6">
         <Routes>
+          {/* Public routes */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+
+          {/* User pages */}
           <Route path="/scan" element={<Scan />} />
           <Route path="/results" element={<Results />} />
           <Route path="/centers" element={<Centers />} />
           <Route path="/rewards" element={<Rewards />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* User Dashboard (protected) */}
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute allowedRoles={["user"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Dashboard (protected) */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Users */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Users />
+              </ProtectedRoute>
+            }
+          />
+<Route
+  path="/admin/uploads"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <Uploads />
+    </ProtectedRoute>
+  }
+/>
+  <Route
+  path="/admin/rewards"
+  element={
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <RewardsAdmin />
+    </ProtectedRoute>
+  }
+/>
         </Routes>
       </main>
 

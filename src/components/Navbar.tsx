@@ -1,40 +1,56 @@
-import { Link, useLocation } from "react-router-dom";
+// src/components/Navbar.tsx
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const links = [
-    { to: "/", label: "Home" },
-    { to: "/scan", label: "Scan" },
-    { to: "/centers", label: "Centers" },
-    { to: "/rewards", label: "Rewards" },
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/login", label: "Login" },
-  { to: "/register", label: "Register" },
+  const role = localStorage.getItem("role");
+  const username = localStorage.getItem("username");
+  const isLoggedIn = !!role;
 
-  ];
+  const handleLogout = () => {
+    localStorage.removeItem("role");
+    localStorage.removeItem("username");
+    navigate("/login");
+  };
+
+  // Links
+  let links = [{ to: "/", label: "Home" }];
+
+  if (!isLoggedIn) {
+    links.push({ to: "/login", label: "Login" });
+    links.push({ to: "/register", label: "Register" });
+  } else if (role === "admin") {
+    links.push({ to: "/admin", label: "Dashboard" });
+    links.push({ to: "/admin/users", label: "Users" });     // ✅ fixed
+    links.push({ to: "/admin/uploads", label: "Uploads" }); // ✅ fixed
+    links.push({ to: "/admin/rewards", label: "Rewards" }); // ✅ fixed
+  } else {
+    links.push({ to: "/dashboard", label: "Dashboard" });
+    links.push({ to: "/scan", label: "Scans" });
+    links.push({ to: "/centers", label: "Centres" });
+    links.push({ to: "/rewards", label: "Rewards" });
+  }
 
   return (
     <nav className="bg-green-700 text-white shadow-lg sticky top-0 z-50">
       <div className="container mx-auto flex justify-between items-center px-6 py-4">
         {/* Logo */}
-        <Link
-          to="/"
-          className="text-2xl font-extrabold tracking-wide hover:scale-105 transition-transform duration-300"
-        >
+        <Link to="/" className="text-2xl font-extrabold tracking-wide">
           🌍 EcoSort
         </Link>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex space-x-8 font-medium">
+        {/* Desktop */}
+        <div className="hidden md:flex space-x-8 font-medium items-center">
           {links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`relative transition-colors duration-300 ${
+              className={`relative group ${
                 location.pathname === link.to
                   ? "text-yellow-300 font-semibold"
                   : "hover:text-yellow-300"
@@ -42,15 +58,32 @@ export default function Navbar() {
             >
               {link.label}
               <span
-                className={`absolute left-0 -bottom-1 h-[2px] w-full bg-yellow-300 transform scale-x-0 transition-transform duration-300 ${
-                  location.pathname === link.to ? "scale-x-100" : "group-hover:scale-x-100"
+                className={`absolute left-0 -bottom-1 h-[2px] w-full bg-yellow-300 transform scale-x-0 transition-transform ${
+                  location.pathname === link.to
+                    ? "scale-x-100"
+                    : "group-hover:scale-x-100"
                 }`}
-              ></span>
+              />
             </Link>
           ))}
+
+          {isLoggedIn && (
+            <div className="flex items-center space-x-4 ml-6">
+              <div className="w-10 h-10 rounded-full bg-yellow-400 text-green-900 flex items-center justify-center font-bold">
+                {username?.charAt(0).toUpperCase()}
+              </div>
+              <span className="font-semibold">{username}</span>
+              <button
+                onClick={handleLogout}
+                className="ml-2 bg-yellow-400 text-green-900 font-semibold px-4 py-2 rounded-lg hover:bg-yellow-500"
+              >
+                Logout
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile */}
         <button
           className="md:hidden text-2xl"
           onClick={() => setIsOpen(!isOpen)}
@@ -59,23 +92,30 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Dropdown */}
       {isOpen && (
         <div className="md:hidden bg-green-600 px-6 py-4 space-y-4">
           {links.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`block text-lg transition-colors duration-300 ${
+              onClick={() => setIsOpen(false)}
+              className={`block text-lg ${
                 location.pathname === link.to
                   ? "text-yellow-300 font-semibold"
                   : "hover:text-yellow-300"
               }`}
-              onClick={() => setIsOpen(false)} // close menu after click
             >
               {link.label}
             </Link>
           ))}
+          {isLoggedIn && (
+            <button
+              onClick={handleLogout}
+              className="w-full bg-yellow-400 text-green-900 font-semibold px-4 py-2 rounded-lg hover:bg-yellow-500"
+            >
+              Logout
+            </button>
+          )}
         </div>
       )}
     </nav>
