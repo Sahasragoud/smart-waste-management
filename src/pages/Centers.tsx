@@ -36,7 +36,7 @@ export default function Centers() {
   const [locationOption, setLocationOption] = useState<"current" | "ip" | null>(null);
 
   const fetchCenters = async (lat: number, lon: number) => {
-    const delta = 1;
+    const delta = 5;
     const south = lat - delta;
     const north = lat + delta;
     const west = lon - delta;
@@ -46,6 +46,7 @@ export default function Centers() {
       [out:json][timeout:25];
       (
         node["amenity"="recycling"](${south},${west},${north},${east});
+        node["shop"="recycling"](${south},${west},${north},${east});
       );
       out body;
     `;
@@ -55,6 +56,7 @@ export default function Centers() {
     try {
       const res = await fetch(url);
       const data = await res.json();
+
       const centers = data.elements.map((el: any) => ({
         id: el.id,
         name: el.tags.name || "Recycling Center",
@@ -69,8 +71,6 @@ export default function Centers() {
       setCenters(centers);
     } catch (err) {
       console.error("Failed to fetch OSM centers:", err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -83,7 +83,10 @@ export default function Centers() {
         };
         setUserLocation(coords);
         setLocationOption("current");
-        fetchCenters(coords.latitude, coords.longitude);
+
+        fetchCenters(coords.latitude, coords.longitude).finally(() =>
+          setLoading(false)
+        );
       },
       () => {
         setLocationOption(null);
@@ -100,29 +103,29 @@ export default function Centers() {
       const coords = { latitude: data.latitude, longitude: data.longitude };
       setUserLocation(coords);
       setLocationOption("ip");
-      fetchCenters(coords.latitude, coords.longitude);
+      fetchCenters(coords.latitude, coords.longitude).finally(() =>
+        setLoading(false)
+      );
     } catch (err) {
       console.error("IP location fetch failed:", err);
       setLoading(false);
     }
   };
 
-  const filteredCenters = centers
-    .filter((center) =>
-      center.name.toLowerCase().includes(search.toLowerCase()) ||
-      center.address.toLowerCase().includes(search.toLowerCase()) ||
-      center.category.toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (!userLocation) return 0;
-      const distA = getDistance(userLocation.latitude, userLocation.longitude, a.latitude, a.longitude);
-      const distB = getDistance(userLocation.latitude, userLocation.longitude, b.latitude, b.longitude);
-      return distA - distB;
-    });
+  const filteredCenters = centers.filter((center) =>
+    center.name.toLowerCase().includes(search.toLowerCase()) ||
+    center.address.toLowerCase().includes(search.toLowerCase()) ||
+    center.category.toLowerCase().includes(search.toLowerCase())
+  );
 
-  if (loading) return <p className="text-center mt-20 text-green-700 font-semibold">Loading...</p>;
+  if (loading)
+    return (
+      <p className="text-center mt-20 text-green-700 font-semibold">
+        Loading...
+      </p>
+    );
 
-  if (!locationOption) {
+  if (!locationOption)
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <p className="text-lg font-semibold text-green-700 text-center">
@@ -132,7 +135,10 @@ export default function Centers() {
           onClick={() => {
             navigator.geolocation.getCurrentPosition(
               (position) => {
-                const coords = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                const coords = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                };
                 setUserLocation(coords);
                 setLocationOption("current");
                 fetchCenters(coords.latitude, coords.longitude);
@@ -153,7 +159,6 @@ export default function Centers() {
         </button>
       </div>
     );
-  }
 
   return (
     <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
