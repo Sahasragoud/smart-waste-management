@@ -11,8 +11,24 @@ type Center = {
   category: string;
   latitude: number;
   longitude: number;
-  city?: string; // optional, if you have city info
+  city?: string; // optional
 };
+
+// Helper to calculate distance in km
+function deg2rad(deg: number) {
+  return deg * (Math.PI / 180);
+}
+
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function Centers() {
   const [search, setSearch] = useState("");
@@ -35,7 +51,6 @@ export default function Centers() {
   };
 
   useEffect(() => {
-    // Try to get current location
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setUserLocation({
@@ -67,12 +82,22 @@ export default function Centers() {
     });
   };
 
-  // Filter centers by search only; no distance restriction
-  const filteredCenters = centers.filter((center) =>
-    center.name.toLowerCase().includes(search.toLowerCase()) ||
-    center.address.toLowerCase().includes(search.toLowerCase()) ||
-    center.category.toLowerCase().includes(search.toLowerCase())
-  );
+  // Filter centers by search and sort by distance if userLocation exists
+  const filteredCenters = centers
+    .filter((center) =>
+      center.name.toLowerCase().includes(search.toLowerCase()) ||
+      center.address.toLowerCase().includes(search.toLowerCase()) ||
+      center.category.toLowerCase().includes(search.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (userLocation !== null) {
+        const { latitude, longitude } = userLocation;
+        const distA = getDistance(latitude, longitude, a.latitude, a.longitude);
+        const distB = getDistance(latitude, longitude, b.latitude, b.longitude);
+        return distA - distB;
+      }
+      return 0;
+    });
 
   if (loading) {
     return (
