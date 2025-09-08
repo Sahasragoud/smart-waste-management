@@ -11,22 +11,8 @@ type Center = {
   category: string;
   latitude: number;
   longitude: number;
+  city?: string; // optional, if you have city info
 };
-
-function deg2rad(deg: number) {
-  return deg * (Math.PI / 180);
-}
-
-function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371;
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
 
 export default function Centers() {
   const [search, setSearch] = useState("");
@@ -49,7 +35,7 @@ export default function Centers() {
   };
 
   useEffect(() => {
-    // First, try to get Current Location
+    // Try to get current location
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setUserLocation({
@@ -60,7 +46,6 @@ export default function Centers() {
         setLoading(false);
       },
       () => {
-        // If denied, do NOT auto-fetch IP location yet
         setLocationOption(null);
         setLoading(false);
       }
@@ -82,25 +67,12 @@ export default function Centers() {
     });
   };
 
-  const filteredCenters = centers.filter((center) => {
-    const matchesSearch =
-      center.name.toLowerCase().includes(search.toLowerCase()) ||
-      center.address.toLowerCase().includes(search.toLowerCase()) ||
-      center.category.toLowerCase().includes(search.toLowerCase());
-
-    let isNearby = true;
-    if (userLocation) {
-      const distance = getDistance(
-        userLocation.latitude,
-        userLocation.longitude,
-        center.latitude,
-        center.longitude
-      );
-      isNearby = distance <= 5;
-    }
-
-    return matchesSearch && isNearby;
-  });
+  // Filter centers by search only; no distance restriction
+  const filteredCenters = centers.filter((center) =>
+    center.name.toLowerCase().includes(search.toLowerCase()) ||
+    center.address.toLowerCase().includes(search.toLowerCase()) ||
+    center.category.toLowerCase().includes(search.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -147,7 +119,7 @@ export default function Centers() {
   return (
     <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
       <h2 className="text-3xl font-bold text-green-700 text-center mb-8">
-        Nearby Recycling Centers
+        Recycling Centers
       </h2>
 
       <div className="max-w-md mx-auto mb-10 flex items-center bg-white shadow-md rounded-full px-4 py-2">
@@ -167,7 +139,7 @@ export default function Centers() {
             key={center.id}
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.2, duration: 0.5 }}
+            transition={{ delay: index * 0.1, duration: 0.5 }}
             className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
           >
             <h3 className="text-xl font-semibold text-green-800 mb-2 flex items-center gap-2">
@@ -209,10 +181,9 @@ export default function Centers() {
 
       {filteredCenters.length === 0 && (
         <p className="text-center text-gray-600 mt-10">
-          No recycling centers found near your location.
+          No recycling centers found.
         </p>
       )}
     </div>
   );
 }
-
