@@ -51,6 +51,9 @@ public class User {
 
     private Long points = 0L;
 
+    private Role role;
+
+
     public Role getRole() {
         return role;
     }
@@ -138,8 +141,6 @@ public class User {
     public void setId(Long id) {
         this.id = id;
     }
-
-    private Role role;
 
     @PrePersist
     protected void onCreate() {

@@ -22,7 +22,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/uploads")
+@RequestMapping("/api/uploads")
+@CrossOrigin(origins = "http://localhost:5173")
 public class UploadsController {
 
     private final UploadService uploadService;
