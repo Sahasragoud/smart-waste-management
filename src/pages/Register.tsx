@@ -3,42 +3,190 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import axios from "axios";
+import { registerUser } from "../services/UserServices";
+import type { RegisterRequest } from "../types/user";
 
+type UserSession = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  token: string;
+};
+
+const saveUserSession = (userData: UserSession) => {
+  localStorage.setItem("userId", String(userData.id));
+  localStorage.setItem("userName", userData.name);
+  localStorage.setItem("userEmail", userData.email);
+  localStorage.setItem("userRole", userData.role);
+  localStorage.setItem("authToken", userData.token);
+  localStorage.setItem("user", JSON.stringify(userData));
+};
 export default function Register() {
+    const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
+    dob: "",
+    address: "",
+    role: "user"
+  });
+
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordStrength, setPasswordStrength] = useState({
+    message: "",
+    percent: 0,
+    color: "red",
+  });
+  const [apiError, setApiError] = useState("");
+
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-const [dob, setDob] = useState("");
 
   const navigate = useNavigate();
 
   // Password strength checker
-  const getPasswordStrength = (pwd: string) => {
-    if (pwd.length < 6) return "Weak";
-    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd) && /[^A-Za-z0-9]/.test(pwd)) {
-      return "Strong";
+  const getPasswordStrength = (password: string) => {
+        let strength = 0;
+    let message = "";
+    let color = "red";
+
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (/\s/.test(password)) {
+      message = "Password should not contain spaces";
+      strength = 0;
+    } else if (password.length < 8) {
+      message = "At least 8 characters";
+      strength = 0;
+    } else {
+      switch (strength) {
+        case 1:
+        case 2:
+          message = "Weak";
+          color = "red";
+          break;
+        case 3:
+          message = "Fair";
+          color = "orange";
+          break;
+        case 4:
+          message = "Good";
+          color = "goldenrod";
+          break;
+        case 5:
+          message = "Strong";
+          color = "green";
+          break;
+      }
     }
-    return "Medium";
+    return { message, percent: (strength / 5) * 100, color };
+
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
+    if (name === "password") {
+      setPasswordStrength(getPasswordStrength(value));
+    }
+
+    if (name === "password" || name === "confirmPassword") {
+      const pwd = name === "password" ? value : formData.password;
+      const confirmPwd =
+        name === "confirmPassword" ? value : formData.confirmPassword;
+      setPasswordError(
+        pwd && confirmPwd && pwd !== confirmPwd
+          ? "Passwords do not match!"
+          : ""
+      );
+    }
+  };
+
+  const clearForm = () => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+      dob: "",
+      address: "",
+      role: "user"
+    });
+    setPasswordError("");
+    setPasswordStrength({ message: "", percent: 0, color: "red" });
+    setApiError("");
+  };
+
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError("Passwords do not match!");
       return;
     }
 
-    setIsSubmitted(true);
+    setApiError("");
+    try {
+        const payload: RegisterRequest = {
+          username: formData.name,
+          email: formData.email,
+          password: formData.password,
+          phoneNumber: formData.phone,
+          dateOfBirth: formData.dob,
+          address: formData.address,
+          role: formData.role.toUpperCase() as "USER" | "ADMIN",
+        };
+      const response = await registerUser(payload)
 
-    // Simulate success + redirect after 2s
+      const newUser = response.data;
+
+saveUserSession(newUser);
+clearForm();
+setIsSubmitted(true);
+setTimeout(() => {
+  navigate("/dashboard"); // ✅ consistent
+}, 2000);
+} catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        const msg =
+          err.response?.status === 400
+            ? "Registration failed. Please check your inputs."
+            : "Something went wrong. Try again later.";
+        setApiError(msg);
+      } else {
+        setApiError("Unexpected error occurred");
+      }
+    }
+    setIsSubmitted(true);
     setTimeout(() => {
       setIsSubmitted(false);
       navigate("/login");
     }, 2000);
   };
+
+  
+  const isFormValid =
+    formData.name &&
+    formData.email &&
+    formData.password &&
+    formData.confirmPassword &&
+    !passwordError &&
+    passwordStrength.percent >= 50;
+
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 px-6">
@@ -62,6 +210,9 @@ const [dob, setDob] = useState("");
               placeholder="John Doe"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               required
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
             />
           </div>
 
@@ -73,6 +224,10 @@ const [dob, setDob] = useState("");
               placeholder="you@example.com"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               required
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+
             />
           </div>
           {/* Password */}
@@ -81,11 +236,12 @@ const [dob, setDob] = useState("");
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={handleChange}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 required
+                name="password"
               />
               <button
                 type="button"
@@ -95,21 +251,24 @@ const [dob, setDob] = useState("");
                 {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
               </button>
             </div>
-            {/* Strength Indicator */}
-            {password && (
-              <p
-                className={`mt-1 text-sm font-medium ${
-                  getPasswordStrength(password) === "Weak"
-                    ? "text-red-500"
-                    : getPasswordStrength(password) === "Medium"
-                    ? "text-yellow-500"
-                    : "text-green-600"
-                }`}
-              >
-                Strength: {getPasswordStrength(password)}
-              </p>
-            )}
           </div>
+            {/* Strength Indicator */}
+          {formData.password && (
+            <div>
+              <small style={{ color: passwordStrength.color }}>
+                {passwordStrength.message}
+              </small>
+              <div className="w-full bg-gray-200 h-1 rounded mt-1">
+                <div
+                  style={{
+                    width: `${passwordStrength.percent}%`,
+                    backgroundColor: passwordStrength.color,
+                  }}
+                  className="h-1 rounded"
+                ></div>
+              </div>
+            </div>
+          )}
 
           {/* Confirm Password */}
           <div>
@@ -117,11 +276,12 @@ const [dob, setDob] = useState("");
             <div className="relative">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                value={formData.confirmPassword}
+                onChange={handleChange}
                 placeholder="••••••••"
                 className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                 required
+                name="confirmPassword"
               />
               <button
                 type="button"
@@ -139,26 +299,27 @@ const [dob, setDob] = useState("");
             <label className="block text-gray-700 font-medium">Phone</label>
             <input
               type="tel"
-              placeholder="+91 98765 43210"
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
+              onChange={handleChange}
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               required
             />
           </div>
           {/* Date of Birth */}
-<div>
-  <label className="block text-gray-700 font-medium">Date of Birth</label>
-  <input
-    type="date"
-    value={dob}
-    onChange={(e) => setDob(e.target.value)}
-    className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-    required
-    max={new Date().toISOString().split("T")[0]} // prevent future dates
-  />
-</div>
-
-
-
+          <div>
+            <label className="block text-gray-700 font-medium">Date of Birth</label>
+            <input
+              name="dob"
+              type="date"
+              value={formData.dob}
+              onChange={handleChange}
+              className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
+              required
+              max={new Date().toISOString().split("T")[0]} // prevent future dates
+            />
+          </div>
 
           {/* Address */}
           <div>
@@ -168,18 +329,25 @@ const [dob, setDob] = useState("");
               placeholder="123 Green Street"
               className="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
               required
+              name="address"
+              value={formData.address}
+              onChange={handleChange}
             />
           </div>
 
-          
+          {apiError && <p className="text-red-500 text-sm">{apiError}</p>}
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition"
+            className={`w-full py-3 text-white font-semibold rounded-lg shadow-md transition ${
+              isFormValid ? "bg-green-600 hover:bg-green-700" : "bg-gray-400 cursor-not-allowed"
+            }`}
+            disabled={!isFormValid}
           >
             Register
           </button>
+
         </form>
 
         {/* Success Popup */}
@@ -204,3 +372,4 @@ const [dob, setDob] = useState("");
     </section>
   );
 }
+
