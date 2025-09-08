@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from "axios";
+import { loginUser } from "../services/UserServices";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -60,9 +61,9 @@ const handleSubmit = async (e: React.FormEvent) => {
             </label>
             <input
               type="text"
-              value={identifier}
+              value={email}
               onChange={(e) => {
-                setIdentifier(e.target.value);
+                setEmail(e.target.value);
                 setError("");
               }}
               placeholder="Enter your username (admin) or email (user)"
