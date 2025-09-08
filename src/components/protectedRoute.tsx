@@ -1,25 +1,27 @@
+// src/components/protectedRoute.tsx
+import React, { type JSX } from "react";
 import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
-  allowedRoles: string[]; // e.g. ["admin"] or ["user"]
+  allowedRoles: string[];
+  children: JSX.Element;
 }
 
-export default function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const role = localStorage.getItem("role");
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles, children }) => {
+  const userString = localStorage.getItem("user");
+  if (!userString) return <Navigate to="/login" />;
 
-  if (!role) {
-    return <Navigate to="/login" replace />;
+  const user = JSON.parse(userString);
+
+  // Normalize role to lowercase
+  const role = user.role?.toLowerCase();
+
+  // Check if role is allowed
+  if (!allowedRoles.map(r => r.toLowerCase()).includes(role)) {
+    return <Navigate to="/login" />;
   }
 
-  if (!allowedRoles.includes(role)) {
-    // Redirect user to their own dashboard
-    return role === "admin" ? (
-      <Navigate to="/admin" replace />
-    ) : (
-      <Navigate to="/dashboard" replace />
-    );
-  }
+  return children;
+};
 
-  return <>{children}</>;
-}
+export default ProtectedRoute;

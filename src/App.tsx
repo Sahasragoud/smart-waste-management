@@ -13,8 +13,8 @@ import Rewards from "./pages/Rewards";
 import Dashboard from "./pages/Dashboard";
 import ForgotPassword from "./pages/ForgotPassword";
 import ProtectedRoute from "./components/protectedRoute";
-import Users from "./pages/users";
-import Uploads from "./pages/uploads";
+import Users from "./pages/Users";
+import Uploads from "./pages/Uploads";
 import RewardsAdmin from "./pages/RewardsAdmin.tsx";
 
 function App() {
