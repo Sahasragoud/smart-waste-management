@@ -2,7 +2,52 @@ import { useState } from "react";
 import { Upload } from "lucide-react";
 
 export default function Scan() {
-  const [fileName, setFileName] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
+  const [points, setPoints] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
+
+  // Points mapping per waste category
+  const pointsMap: { [key: string]: number } = {
+    Plastic: 10,
+    Organic: 5,
+    "E-Waste": 20,
+    Hazardous: 15,
+  };
+
+  const handleAnalyze = () => {
+    if (!file) {
+      alert("Please select a file first!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    setLoading(true);
+    setCategory(null);
+
+    fetch("/api/analyze", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setLoading(false);
+        const detectedCategory = data.category || "Unknown Category";
+        setCategory(detectedCategory);
+
+        // Award points
+        if (pointsMap[detectedCategory]) {
+          setPoints((prev) => prev + pointsMap[detectedCategory]);
+        }
+      })
+      .catch((error) => {
+        setLoading(false);
+        console.error("Error uploading file:", error);
+        alert("Something went wrong. Please try again.");
+      });
+  };
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-green-100 px-6">
@@ -26,24 +71,55 @@ export default function Scan() {
           <input
             type="file"
             className="hidden"
-            onChange={(e) =>
-              setFileName(e.target.files?.[0]?.name || "")
-            }
+            accept="image/*"
+            onChange={(e) => setFile(e.target.files?.[0] || null)}
           />
         </label>
 
-        {/* File Name Preview */}
-        {fileName && (
+        {/* Image Preview */}
+        {file && (
+          <img
+            src={URL.createObjectURL(file)}
+            alt="Preview"
+            className="w-40 h-40 object-contain mx-auto rounded-md shadow-md mb-4"
+          />
+        )}
+
+        {/* File Name */}
+        {file && (
           <p className="text-sm text-gray-500 mb-4">
-            Selected: <span className="font-medium">{fileName}</span>
+            Selected: <span className="font-medium">{file.name}</span>
           </p>
         )}
 
         {/* Analyze Button */}
-        <button className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition">
-          Upload & Analyze
+        <button
+          className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition"
+          onClick={handleAnalyze}
+          disabled={!file || loading}
+        >
+          {loading ? "Analyzing..." : "Upload & Analyze"}
         </button>
+
+        {/* Display Category & Points */}
+        {category && !loading && (
+          <div className="mt-4">
+            <p className="text-xl font-semibold text-green-700">
+              Waste Category:{" "}
+              <span className="text-green-900">{category}</span>
+            </p>
+            <p className="mt-2 text-lg font-medium text-green-800">
+              You earned {pointsMap[category] || 0} points for this scan!
+            </p>
+          </div>
+        )}
+
+        {/* Total Points */}
+        <p className="mt-4 text-md font-semibold text-green-700">
+          Total Points: {points}
+        </p>
       </div>
     </section>
   );
 }
+a
