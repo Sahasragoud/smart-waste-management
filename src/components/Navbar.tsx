@@ -8,17 +8,19 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const storedUser = localStorage.getItem("user");
-  const user = storedUser ? JSON.parse(storedUser) : null;
+  // Reactive user state
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
 
   const role = user?.role?.toLowerCase() || null;
   const username = user?.username || null;
   const isLoggedIn = !!role;
 
-  
   const handleLogout = () => {
-    localStorage.removeItem("role");
-    localStorage.removeItem("username");
+    localStorage.removeItem("user"); // remove user from localStorage
+    setUser(null); // update state to re-render navbar
     navigate("/login");
   };
 
@@ -30,9 +32,9 @@ export default function Navbar() {
     links.push({ to: "/register", label: "Register" });
   } else if (role === "admin") {
     links.push({ to: "/admin", label: "Dashboard" });
-    links.push({ to: "/admin/users", label: "Users" });     // ✅ fixed
-    links.push({ to: "/admin/uploads", label: "Uploads" }); // ✅ fixed
-    links.push({ to: "/admin/rewards", label: "Rewards" }); // ✅ fixed
+    links.push({ to: "/admin/users", label: "Users" });
+    links.push({ to: "/admin/uploads", label: "Uploads" });
+    links.push({ to: "/admin/rewards", label: "Rewards" });
   } else {
     links.push({ to: "/dashboard", label: "Dashboard" });
     links.push({ to: "/scan", label: "Scans" });

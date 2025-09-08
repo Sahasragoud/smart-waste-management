@@ -1,7 +1,25 @@
+import { useState, useEffect } from "react";
 import { Leaf, Recycle, Wind, Star } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function Dashboard() {
+  const [user, setUser] = useState<{ username?: string } | null>(null);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    setUser(storedUser ? JSON.parse(storedUser) : null);
+
+    // Optional: Listen to localStorage changes from other tabs/windows
+    const handleStorageChange = () => {
+      const updatedUser = localStorage.getItem("user");
+      setUser(updatedUser ? JSON.parse(updatedUser) : null);
+    };
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
+
+  const username = user?.username || "Guest";
+
   const data = [
     { day: "Mon", plastic: 0.3, co2: 0.5 },
     { day: "Tue", plastic: 0.5, co2: 0.8 },
@@ -19,7 +37,7 @@ export default function Dashboard() {
         Your Eco Dashboard 🌱
       </h2>
       <p className="text-center text-gray-600 mb-12 max-w-xl mx-auto">
-        Hi <span className="font-bold">Rushwitha</span>, here’s your weekly environmental impact!
+        Hi <span className="font-bold">{username}</span>, here’s your weekly environmental impact!
       </p>
 
       {/* Stats Grid */}
