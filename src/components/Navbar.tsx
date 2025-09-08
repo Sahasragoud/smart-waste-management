@@ -1,6 +1,6 @@
 // src/components/Navbar.tsx
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
 
 export default function Navbar() {
@@ -8,19 +8,32 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Reactive user state
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
+  const [user, setUser] = useState<any>(null);
 
   const role = user?.role?.toLowerCase() || null;
   const username = user?.username || null;
   const isLoggedIn = !!role;
 
+  // Sync user state with localStorage on mount and storage events
+  useEffect(() => {
+    const syncUser = () => {
+      const storedUser = localStorage.getItem("user");
+      setUser(storedUser ? JSON.parse(storedUser) : null);
+    };
+
+    // Initial sync
+    syncUser();
+
+    // Listen to storage events (even from other tabs)
+    window.addEventListener("storage", syncUser);
+
+    return () => window.removeEventListener("storage", syncUser);
+  }, []);
+
   const handleLogout = () => {
-    localStorage.removeItem("user"); // remove user from localStorage
-    setUser(null); // update state to re-render navbar
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    setUser(null); // Immediately update state
     navigate("/login");
   };
 
