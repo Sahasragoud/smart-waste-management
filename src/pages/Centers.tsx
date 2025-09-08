@@ -1,56 +1,148 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Phone, Clock, Search, Recycle } from "lucide-react";
 import { motion } from "framer-motion";
 
 type Center = {
   id: number;
   name: string;
-  distance: string;
   address: string;
   phone?: string;
   hours?: string;
   category: string;
+  latitude: number;
+  longitude: number;
 };
 
-const centers: Center[] = [
-  {
-    id: 1,
-    name: "♻️ Green Earth Center",
-    distance: "2 km away",
-    address: "123 Green St, Eco City",
-    phone: "9876543210",
-    hours: "9:00 AM - 6:00 PM",
-    category: "Plastic",
-  },
-  {
-    id: 2,
-    name: "🌱 EcoDrop Station",
-    distance: "5 km away",
-    address: "456 Clean Ave, Eco Town",
-    phone: "9123456780",
-    hours: "10:00 AM - 8:00 PM",
-    category: "E-Waste",
-  },
-  {
-    id: 3,
-    name: "🌍 PaperCycle Hub",
-    distance: "3 km away",
-    address: "789 Paper Rd, GreenVille",
-    phone: "9876512345",
-    hours: "8:00 AM - 7:00 PM",
-    category: "Paper",
-  },
-];
+function deg2rad(deg: number) {
+  return deg * (Math.PI / 180);
+}
+
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371;
+  const dLat = deg2rad(lat2 - lat1);
+  const dLon = deg2rad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function Centers() {
   const [search, setSearch] = useState("");
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [centers, setCenters] = useState<Center[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [locationOption, setLocationOption] = useState<"current" | "ip" | null>(null);
 
-  const filteredCenters = centers.filter(
-    (center) =>
+  const fetchIpLocation = async () => {
+    try {
+      const res = await fetch("https://ipapi.co/json/");
+      const data = await res.json();
+      setUserLocation({
+        latitude: data.latitude,
+        longitude: data.longitude,
+      });
+    } catch (err) {
+      console.error("IP location fetch failed:", err);
+    }
+  };
+
+  useEffect(() => {
+    // First, try to get Current Location
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocationOption("current");
+        setLoading(false);
+      },
+      () => {
+        // If denied, do NOT auto-fetch IP location yet
+        setLocationOption(null);
+        setLoading(false);
+      }
+    );
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/centers")
+      .then((res) => res.json())
+      .then((data: Center[]) => setCenters(data))
+      .catch((err) => console.error("Failed to fetch centers:", err));
+  }, []);
+
+  const handleUseIpLocation = () => {
+    setLoading(true);
+    fetchIpLocation().then(() => {
+      setLocationOption("ip");
+      setLoading(false);
+    });
+  };
+
+  const filteredCenters = centers.filter((center) => {
+    const matchesSearch =
       center.name.toLowerCase().includes(search.toLowerCase()) ||
       center.address.toLowerCase().includes(search.toLowerCase()) ||
-      center.category.toLowerCase().includes(search.toLowerCase())
-  );
+      center.category.toLowerCase().includes(search.toLowerCase());
+
+    let isNearby = true;
+    if (userLocation) {
+      const distance = getDistance(
+        userLocation.latitude,
+        userLocation.longitude,
+        center.latitude,
+        center.longitude
+      );
+      isNearby = distance <= 5;
+    }
+
+    return matchesSearch && isNearby;
+  });
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-green-700 font-semibold text-lg">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!locationOption) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <p className="text-lg font-semibold text-green-700 text-center">
+          We couldn’t get your current location.
+        </p>
+        <button
+          onClick={() => {
+            navigator.geolocation.getCurrentPosition(
+              (position) => {
+                setUserLocation({
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                });
+                setLocationOption("current");
+              },
+              () => alert("Failed to get current location.")
+            );
+          }}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg"
+        >
+          Use Current Location
+        </button>
+
+        <button
+          onClick={handleUseIpLocation}
+          className="px-6 py-2 bg-yellow-500 text-white rounded-lg"
+        >
+          Use IP-based Location
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
@@ -58,7 +150,6 @@ export default function Centers() {
         Nearby Recycling Centers
       </h2>
 
-      {/* Search Bar */}
       <div className="max-w-md mx-auto mb-10 flex items-center bg-white shadow-md rounded-full px-4 py-2">
         <Search className="h-5 w-5 text-green-600 mr-2" />
         <input
@@ -70,7 +161,6 @@ export default function Centers() {
         />
       </div>
 
-      {/* Centers Grid */}
       <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
         {filteredCenters.map((center, index) => (
           <motion.div
@@ -89,7 +179,7 @@ export default function Centers() {
             </span>
             <p className="text-gray-600 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-green-600" />
-              {center.address} • {center.distance}
+              {center.address}
             </p>
             {center.phone && (
               <p className="text-gray-600 flex items-center gap-2 mt-1">
@@ -103,12 +193,9 @@ export default function Centers() {
                 {center.hours}
               </p>
             )}
-
             <div className="mt-4 flex justify-end">
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                  center.address
-                )}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(center.address)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 bg-green-700 text-white text-sm font-semibold rounded-lg hover:bg-green-800 transition"
@@ -122,9 +209,10 @@ export default function Centers() {
 
       {filteredCenters.length === 0 && (
         <p className="text-center text-gray-600 mt-10">
-          No recycling centers found for your search.
+          No recycling centers found near your location.
         </p>
       )}
     </div>
   );
 }
+
