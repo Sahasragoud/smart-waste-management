@@ -8,10 +8,14 @@ export default function Navbar() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const role = localStorage.getItem("role");
-  const username = localStorage.getItem("username");
+  const storedUser = localStorage.getItem("user");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  const role = user?.role?.toLowerCase() || null;
+  const username = user?.username || null;
   const isLoggedIn = !!role;
 
+  
   const handleLogout = () => {
     localStorage.removeItem("role");
     localStorage.removeItem("username");
@@ -19,7 +23,7 @@ export default function Navbar() {
   };
 
   // Links
-  let links = [{ to: "/", label: "Home" }];
+  const links = [{ to: "/", label: "Home" }];
 
   if (!isLoggedIn) {
     links.push({ to: "/login", label: "Login" });
