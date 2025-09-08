@@ -2,48 +2,45 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axios from "axios";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [identifier, setIdentifier] = useState("");
+  const [email, setEmail] = useState(""); 
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const users = [
-    { username: "admin", password: "admin123", role: "admin" },
-    { email: "user1@gmail.com", password: "user123", role: "user" },
-    { email: "user2@gmail.com", password: "pass456", role: "user" },
-  ];
+  
+const handleSubmit = async (e: React.FormEvent) => {
+   e.preventDefault(); 
+   setError(""); 
 
-  const loginAPI = async (identifier: string, password: string) => {
-    const foundUser = users.find(
-      (u) =>
-        (u.username === identifier || u.email === identifier) &&
-        u.password === password
-    );
-    if (!foundUser) throw new Error("Invalid username or password");
-    return { role: foundUser.role };
-  };
+   const trimmedEmail = email.trim(); 
+   const trimmedPassword = password.trim();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      setError("");
-      const response = await loginAPI(identifier, password);
-
-      localStorage.setItem("role", response.role);
-
-      if (response.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (err) {
-      setError("Invalid username or password");
-    }
-  };
-
+   if (!trimmedEmail) return setError("Email or Username is required."); 
+   if (!trimmedPassword) return setError("Password is required."); 
+   if (trimmedPassword.length < 6) return setError("Password must be at least 6 characters long."); 
+   try { 
+    const response = await loginUser(trimmedEmail.toLowerCase(), trimmedPassword); 
+    console.log("Login response:", response.data); 
+    if (response.data && response.data.id) { 
+      localStorage.setItem("user", JSON.stringify(response.data)); 
+      localStorage.setItem("token", response.data.token); 
+      const role = response.data.role.toLowerCase(); 
+      if (role === "user") { navigate("/dashboard"); } 
+      else if (role === "admin") { navigate("/admin"); } 
+      else { setError("Invalid role received from server."); }
+     } else { 
+      setError("Login successful, but response is missing user data."); } 
+    }catch (err) { 
+      if (axios.isAxiosError(err) && err.response) { 
+        setError(err.response.data?.message || "Something went wrong."); 
+      } 
+      else { setError("Something went wrong. Please try again later."); }
+     } 
+    };
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-green-100 px-6">
       <motion.div
@@ -56,10 +53,10 @@ export default function Login() {
           Login to EcoSort 🌱
         </h2>
 
-        <form className="space-y-5" onSubmit={handleLogin}>
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div>
             <label className="block text-gray-700 font-medium">
-              Username / Email
+              Username 
             </label>
             <input
               type="text"
