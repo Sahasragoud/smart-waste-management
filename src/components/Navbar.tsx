@@ -11,12 +11,13 @@ import {
   FaSun,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+import type { User } from "../types/user";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User>();
   const [profileOpen, setProfileOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
@@ -62,7 +63,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    setUser(null);
+    setUser(undefined);
     navigate("/login");
   };
 
@@ -104,8 +105,8 @@ export default function Navbar() {
               to={link.to}
               className={`py-2 px-4 rounded-md transition duration-300 ${
                 location.pathname === link.to
-                  ? "bg-green-700 text-green-300 font-semibold dark:bg-gray-800 dark:text-green-300"
-                  : "hover:bg-green-700 hover:text-green-100 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                  ? "bg-green-700 text-green-100 font-semibold"
+                  : "hover:bg-green-700 hover:text-green-100"
               }`}
             >
               {link.label}
