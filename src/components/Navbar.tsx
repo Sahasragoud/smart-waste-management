@@ -1,14 +1,25 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { useState, useEffect, useRef } from "react";
 import { FaBars, FaTimes, FaUserCircle, FaCog, FaBell } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
+=======
+import { useState, useEffect } from "react";
+import { FaBars, FaTimes } from "react-icons/fa";
+import type { User } from "../types/user";
+>>>>>>> e69a72c2a8210cde7259783bb1bc18f0c1f1b0cb
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+<<<<<<< HEAD
   const [user, setUser] = useState<any>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+=======
+
+  const [user, setUser] = useState<User>();
+>>>>>>> e69a72c2a8210cde7259783bb1bc18f0c1f1b0cb
 
   const role = user?.role?.toLowerCase() || null;
   const username = user?.username || null;
@@ -41,7 +52,11 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+<<<<<<< HEAD
     setUser(null);
+=======
+    setUser(undefined); // Immediately update state
+>>>>>>> e69a72c2a8210cde7259783bb1bc18f0c1f1b0cb
     navigate("/login");
   };
 
