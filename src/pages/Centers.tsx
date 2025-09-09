@@ -1,3 +1,4 @@
+// src/pages/Centers.tsx
 import { useState, useEffect } from "react";
 import { MapPin, Phone, Clock, Search, Recycle } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,21 +14,6 @@ type Center = {
   longitude: number;
 };
 
-function deg2rad(deg: number) {
-  return deg * (Math.PI / 180);
-}
-
-function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371;
-  const dLat = deg2rad(lat2 - lat1);
-  const dLon = deg2rad(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 export default function Centers() {
   const [search, setSearch] = useState("");
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -35,29 +21,56 @@ export default function Centers() {
   const [loading, setLoading] = useState(true);
   const [locationOption, setLocationOption] = useState<"current" | "ip" | null>(null);
 
+  // Get user location
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const coords = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+        setUserLocation(coords);
+        setLocationOption("current");
+        fetchCenters(coords.latitude, coords.longitude);
+      },
+      () => {
+        setLocationOption(null);
+        setLoading(false);
+      }
+    );
+  }, []);
+
+  // Fetch OSM recycling centers
   const fetchCenters = async (lat: number, lon: number) => {
-    const delta = 5;
+    setLoading(true);
+    const delta = 0.5; // ~50 km bounding box
     const south = lat - delta;
     const north = lat + delta;
     const west = lon - delta;
     const east = lon + delta;
 
     const query = `
-      [out:json][timeout:25];
+      [out:json][timeout:60];
       (
         node["amenity"="recycling"](${south},${west},${north},${east});
         node["shop"="recycling"](${south},${west},${north},${east});
       );
       out body;
     `;
-
     const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
 
     try {
       const res = await fetch(url);
       const data = await res.json();
 
-      const centers = data.elements.map((el: any) => ({
+      if (!data.elements || data.elements.length === 0) {
+        console.warn("No centers found in this area.");
+        setCenters([]);
+        setLoading(false);
+        return;
+      }
+
+      const centers: Center[] = data.elements.map((el: any) => ({
         id: el.id,
         name: el.tags.name || "Recycling Center",
         address: el.tags["addr:full"] || el.tags["addr:street"] || "Address not available",
@@ -71,30 +84,13 @@ export default function Centers() {
       setCenters(centers);
     } catch (err) {
       console.error("Failed to fetch OSM centers:", err);
+      setCenters([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        setUserLocation(coords);
-        setLocationOption("current");
-
-        fetchCenters(coords.latitude, coords.longitude).finally(() =>
-          setLoading(false)
-        );
-      },
-      () => {
-        setLocationOption(null);
-        setLoading(false);
-      }
-    );
-  }, []);
-
+  // Use IP location fallback
   const handleUseIpLocation = async () => {
     setLoading(true);
     try {
@@ -103,68 +99,54 @@ export default function Centers() {
       const coords = { latitude: data.latitude, longitude: data.longitude };
       setUserLocation(coords);
       setLocationOption("ip");
-      fetchCenters(coords.latitude, coords.longitude).finally(() =>
-        setLoading(false)
-      );
+      fetchCenters(coords.latitude, coords.longitude);
     } catch (err) {
       console.error("IP location fetch failed:", err);
       setLoading(false);
     }
   };
 
-  const filteredCenters = centers.filter((center) =>
-    center.name.toLowerCase().includes(search.toLowerCase()) ||
-    center.address.toLowerCase().includes(search.toLowerCase()) ||
-    center.category.toLowerCase().includes(search.toLowerCase())
+  const filteredCenters = centers.filter(
+    (center) =>
+      center.name.toLowerCase().includes(search.toLowerCase()) ||
+      center.address.toLowerCase().includes(search.toLowerCase()) ||
+      center.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading)
-    return (
-      <p className="text-center mt-20 text-green-700 font-semibold">
-        Loading...
-      </p>
-    );
+  if (loading) return <p className="text-center mt-20 text-green-700 font-semibold">Loading...</p>;
 
-  if (!locationOption)
+  if (!locationOption) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <p className="text-lg font-semibold text-green-700 text-center">
           We couldn’t get your current location.
         </p>
         <button
-          onClick={() => {
+          onClick={() =>
             navigator.geolocation.getCurrentPosition(
               (position) => {
-                const coords = {
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                };
+                const coords = { latitude: position.coords.latitude, longitude: position.coords.longitude };
                 setUserLocation(coords);
                 setLocationOption("current");
                 fetchCenters(coords.latitude, coords.longitude);
               },
               () => alert("Failed to get current location.")
-            );
-          }}
+            )
+          }
           className="px-6 py-2 bg-green-600 text-white rounded-lg"
         >
           Use Current Location
         </button>
-
-        <button
-          onClick={handleUseIpLocation}
-          className="px-6 py-2 bg-yellow-500 text-white rounded-lg"
-        >
+        <button onClick={handleUseIpLocation} className="px-6 py-2 bg-yellow-500 text-white rounded-lg">
           Use IP-based Location
         </button>
       </div>
     );
+  }
 
   return (
     <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
-      <h2 className="text-3xl font-bold text-green-700 text-center mb-8">
-        Nearby Recycling Centers
-      </h2>
+      <h2 className="text-3xl font-bold text-green-700 text-center mb-8">Nearby Recycling Centers</h2>
 
       <div className="max-w-md mx-auto mb-10 flex items-center bg-white shadow-md rounded-full px-4 py-2">
         <Search className="h-5 w-5 text-green-600 mr-2" />
@@ -224,9 +206,7 @@ export default function Centers() {
       </div>
 
       {filteredCenters.length === 0 && (
-        <p className="text-center text-gray-600 mt-10">
-          No recycling centers found.
-        </p>
+        <p className="text-center text-gray-600 mt-10">No recycling centers found.</p>
       )}
     </div>
   );
