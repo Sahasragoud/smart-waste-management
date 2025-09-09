@@ -2,13 +2,14 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { FaBars, FaTimes } from "react-icons/fa";
+import type { User } from "../types/user";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User>();
 
   const role = user?.role?.toLowerCase() || null;
   const username = user?.username || null;
@@ -33,7 +34,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    setUser(null); // Immediately update state
+    setUser(undefined); // Immediately update state
     navigate("/login");
   };
 
