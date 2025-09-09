@@ -14,6 +14,19 @@ type Center = {
   longitude: number;
 };
 
+type OsmElement = {
+  id: number;
+  lat: number;
+  lon: number;
+  tags: {
+    name?: string;
+    "addr:full"?: string;
+    "addr:street"?: string;
+    phone?: string;
+    opening_hours?: string;
+  };
+};
+
 export default function Centers() {
   const [search, setSearch] = useState("");
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -70,7 +83,7 @@ export default function Centers() {
         return;
       }
 
-      const centers: Center[] = data.elements.map((el: any) => ({
+      const centers: Center[] = data.elements.map((el: OsmElement) => ({
         id: el.id,
         name: el.tags.name || "Recycling Center",
         address: el.tags["addr:full"] || el.tags["addr:street"] || "Address not available",
@@ -113,7 +126,12 @@ export default function Centers() {
       center.category.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) return <p className="text-center mt-20 text-green-700 font-semibold">Loading...</p>;
+  if (loading)
+    return (
+      <p className="text-center mt-20 text-green-700 font-semibold">
+        Loading...
+      </p>
+    );
 
   if (!locationOption) {
     return (
@@ -125,7 +143,10 @@ export default function Centers() {
           onClick={() =>
             navigator.geolocation.getCurrentPosition(
               (position) => {
-                const coords = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+                const coords = {
+                  latitude: position.coords.latitude,
+                  longitude: position.coords.longitude,
+                };
                 setUserLocation(coords);
                 setLocationOption("current");
                 fetchCenters(coords.latitude, coords.longitude);
@@ -137,7 +158,10 @@ export default function Centers() {
         >
           Use Current Location
         </button>
-        <button onClick={handleUseIpLocation} className="px-6 py-2 bg-yellow-500 text-white rounded-lg">
+        <button
+          onClick={handleUseIpLocation}
+          className="px-6 py-2 bg-yellow-500 text-white rounded-lg"
+        >
           Use IP-based Location
         </button>
       </div>
@@ -146,7 +170,9 @@ export default function Centers() {
 
   return (
     <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
-      <h2 className="text-3xl font-bold text-green-700 text-center mb-8">Nearby Recycling Centers</h2>
+      <h2 className="text-3xl font-bold text-green-700 text-center mb-8">
+        Nearby Recycling Centers
+      </h2>
 
       <div className="max-w-md mx-auto mb-10 flex items-center bg-white shadow-md rounded-full px-4 py-2">
         <Search className="h-5 w-5 text-green-600 mr-2" />
@@ -206,7 +232,9 @@ export default function Centers() {
       </div>
 
       {filteredCenters.length === 0 && (
-        <p className="text-center text-gray-600 mt-10">No recycling centers found.</p>
+        <p className="text-center text-gray-600 mt-10">
+          No recycling centers found.
+        </p>
       )}
     </div>
   );
