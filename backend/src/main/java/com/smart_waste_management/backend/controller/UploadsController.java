@@ -68,7 +68,7 @@ public class UploadsController {
     ) throws UserNotFoundException {
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sortBy = Sort.by(direction, sortField);
-        return uploadService.getUploadsById(userId,PageRequest.of(page,size,sortBy));
+        return uploadService.getUploadsByUserId(userId,PageRequest.of(page,size,sortBy));
     }
 
     @GetMapping("/{id}/image")

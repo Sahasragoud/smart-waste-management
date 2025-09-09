@@ -15,4 +15,5 @@ import org.springframework.stereotype.Service;
 public interface UserService {
     public User updateUser(Long userId, UpdateProfileRequest profileRequest) throws UserNotFoundException;
     public User updatePassword(Long userId, UpdatePasswordRequest request) throws UserNotFoundException, AccessDeniedException;
+    public User getUserById(Long userId) throws UserNotFoundException;
 }

@@ -31,4 +31,9 @@ public class UserController {
         return userService.updatePassword(userId, passwordRequest);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PutMapping("/by-id/{userId}")
+    public User getUserById(@PathVariable Long userId) throws UserNotFoundException {
+        return userService.getUserById(userId);
+    }
 }
