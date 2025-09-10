@@ -1,241 +1,344 @@
-// src/pages/Centers.tsx
-import { useState, useEffect } from "react";
-import { MapPin, Phone, Clock, Search, Recycle } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
-type Center = {
+interface User {
   id: number;
-  name: string;
+  username: string;
+  email: string;
+  password?: string;
+  phone_number: string;
   address: string;
-  phone?: string;
-  hours?: string;
-  category: string;
-  latitude: number;
-  longitude: number;
-};
+  date_of_birth: string;
+  created_date: string;
+  points: number;
+  role: "admin" | "user";
+}
 
-type OsmElement = {
-  id: number;
-  lat: number;
-  lon: number;
-  tags: {
-    name?: string;
-    "addr:full"?: string;
-    "addr:street"?: string;
-    phone?: string;
-    opening_hours?: string;
+const mockUsers: User[] = [
+  { id: 1, username: "Sahara", email: "example@gmail.com", password: "pass123", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
+  { id: 2, username: "NewAdmin1", email: "newadmin@example.com", password: "adminpass", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
+  { id: 3, username: "NewAdmin2", email: "newadmin2@example.com", password: "adminpass2", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
+  { id: 4, username: "Alice", email: "alice@example.com", password: "alicepass", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
+   { id: 5, username: "Sahara", email: "example@gmail.com", password: "pass123", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
+  { id: 6, username: "NewAdmin1", email: "newadmin@example.com", password: "adminpass", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
+  { id: 7, username: "NewAdmin2", email: "newadmin2@example.com", password: "adminpass2", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
+  { id: 8, username: "Alice", email: "alice@example.com", password: "alicepass", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" }
+];
+
+const COLORS = ["#34D399", "#3B82F6"];
+
+export default function Users() {
+  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [searchAdmin, setSearchAdmin] = useState("");
+  const [searchUser, setSearchUser] = useState("");
+  const [sortFieldAdmin, setSortFieldAdmin] = useState<"username" | "points">("username");
+  const [sortFieldUser, setSortFieldUser] = useState<"username" | "points">("username");
+  const [sortOrderAdmin, setSortOrderAdmin] = useState<"asc" | "desc">("asc");
+  const [sortOrderUser, setSortOrderUser] = useState<"asc" | "desc">("asc");
+  const itemsPerPage = 5;
+  const [adminPage, setAdminPage] = useState(1);
+  const [userPage, setUserPage] = useState(1);
+
+  const [showModal, setShowModal] = useState(false);
+  const [newUserRole, setNewUserRole] = useState<"admin" | "user">("user");
+  const [newUserData, setNewUserData] = useState<Partial<User>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const admins = users.filter(u => u.role === "admin" && u.username.toLowerCase().includes(searchAdmin.toLowerCase()));
+  const normalUsers = users.filter(u => u.role === "user" && u.username.toLowerCase().includes(searchUser.toLowerCase()));
+
+  const handleDelete = (id: number) => {
+    setUsers(users.filter(user => user.id !== id));
   };
-};
 
-export default function Centers() {
-  const [search, setSearch] = useState("");
-  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [centers, setCenters] = useState<Center[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [locationOption, setLocationOption] = useState<"current" | "ip" | null>(null);
+  const handleAddUser = () => {
+    const errors: Record<string, string> = {};
+    const requiredFields = ["username", "email", "phone_number", "address", "date_of_birth", "password"];
 
-  // Get user location
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        setUserLocation(coords);
-        setLocationOption("current");
-        fetchCenters(coords.latitude, coords.longitude);
-      },
-      () => {
-        setLocationOption(null);
-        setLoading(false);
+    requiredFields.forEach((field) => {
+      if (!newUserData[field as keyof User]) {
+        errors[field] = `${field.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())} is required.`;
       }
-    );
-  }, []);
+    });
 
-  // Fetch OSM recycling centers
-  const fetchCenters = async (lat: number, lon: number) => {
-    setLoading(true);
-    const delta = 0.5; // ~50 km bounding box
-    const south = lat - delta;
-    const north = lat + delta;
-    const west = lon - delta;
-    const east = lon + delta;
-
-    const query = `
-      [out:json][timeout:60];
-      (
-        node["amenity"="recycling"](${south},${west},${north},${east});
-        node["shop"="recycling"](${south},${west},${north},${east});
-      );
-      out body;
-    `;
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-
-    try {
-      const res = await fetch(url);
-      const data = await res.json();
-
-      if (!data.elements || data.elements.length === 0) {
-        console.warn("No centers found in this area.");
-        setCenters([]);
-        setLoading(false);
-        return;
-      }
-
-      const centers: Center[] = data.elements.map((el: OsmElement) => ({
-        id: el.id,
-        name: el.tags.name || "Recycling Center",
-        address: el.tags["addr:full"] || el.tags["addr:street"] || "Address not available",
-        latitude: el.lat,
-        longitude: el.lon,
-        category: "Recycling",
-        phone: el.tags.phone,
-        hours: el.tags.opening_hours,
-      }));
-
-      setCenters(centers);
-    } catch (err) {
-      console.error("Failed to fetch OSM centers:", err);
-      setCenters([]);
-    } finally {
-      setLoading(false);
+    if (Object.keys(errors).length) {
+      setFormErrors(errors);
+      return;
     }
+
+    const newUser: User = {
+      id: users.length + 1,
+      username: newUserData.username!,
+      email: newUserData.email!,
+      password: newUserData.password!,
+      phone_number: newUserData.phone_number!,
+      address: newUserData.address!,
+      date_of_birth: newUserData.date_of_birth!,
+      created_date: new Date().toISOString().split("T")[0],
+      points: 0,
+      role: newUserRole,
+    };
+
+    setUsers([...users, newUser]);
+    setShowModal(false);
+    setNewUserData({});
+    setFormErrors({});
   };
 
-  // Use IP location fallback
-  const handleUseIpLocation = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("https://ipapi.co/json/");
-      const data = await res.json();
-      const coords = { latitude: data.latitude, longitude: data.longitude };
-      setUserLocation(coords);
-      setLocationOption("ip");
-      fetchCenters(coords.latitude, coords.longitude);
-    } catch (err) {
-      console.error("IP location fetch failed:", err);
-      setLoading(false);
-    }
-  };
-
-  const filteredCenters = centers.filter(
-    (center) =>
-      center.name.toLowerCase().includes(search.toLowerCase()) ||
-      center.address.toLowerCase().includes(search.toLowerCase()) ||
-      center.category.toLowerCase().includes(search.toLowerCase())
-  );
-
-  if (loading)
-    return (
-      <p className="text-center mt-20 text-green-700 font-semibold">
-        Loading...
-      </p>
+  const renderTable = (
+    title: string,
+    data: User[],
+    currentPage: number,
+    setPage: (p: number) => void,
+    totalPages: number,
+    search: string,
+    setSearch: (s: string) => void,
+    sortField: "username" | "points",
+    setSortField: (f: "username" | "points") => void,
+    sortOrder: "asc" | "desc",
+    setSortOrder: (o: "asc" | "desc") => void,
+    showUpload: boolean
+  ) => {
+    const filteredData = [...data].filter(user =>
+      user.username.toLowerCase().includes(search.toLowerCase())
     );
 
-  if (!locationOption) {
+    const sortedData = [...filteredData].sort((a, b) =>
+      sortOrder === "asc"
+        ? a[sortField].toString().localeCompare(b[sortField].toString())
+        : b[sortField].toString().localeCompare(a[sortField].toString())
+    );
+
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentData = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <p className="text-lg font-semibold text-green-700 text-center">
-          We couldn’t get your current location.
-        </p>
-        <button
-          onClick={() =>
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                const coords = {
-                  latitude: position.coords.latitude,
-                  longitude: position.coords.longitude,
-                };
-                setUserLocation(coords);
-                setLocationOption("current");
-                fetchCenters(coords.latitude, coords.longitude);
-              },
-              () => alert("Failed to get current location.")
-            )
-          }
-          className="px-6 py-2 bg-green-600 text-white rounded-lg"
-        >
-          Use Current Location
-        </button>
-        <button
-          onClick={handleUseIpLocation}
-          className="px-6 py-2 bg-yellow-500 text-white rounded-lg"
-        >
-          Use IP-based Location
-        </button>
+      <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex items-center space-x-2">
+            <input
+              type="text"
+              placeholder="Search by username..."
+              value={search}
+              onChange={e => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="px-4 py-2 rounded border border-gray-300"
+            />
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value as "username" | "points")}
+              className="px-4 py-2 rounded border border-gray-300"
+            >
+              <option value="username">Sort by Username</option>
+              <option value="points">Sort by Points</option>
+            </select>
+            <button
+              className="px-4 py-2 border rounded"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            >
+              {sortOrder === "asc" ? "⬆️ Asc" : "⬇️ Desc"}
+            </button>
+          </div>
+
+          <button
+            onClick={() => { setNewUserRole(title === "Admins" ? "admin" : "user"); setShowModal(true); }}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            {title === "Admins" ? "+ Add Admin" : "+ Add User"}
+          </button>
+        </div>
+
+        <table className="min-w-full border border-gray-200">
+          <thead className="bg-green-100">
+            <tr>
+              <th className="border px-4 py-2">ID</th>
+              <th className="border px-4 py-2">Username</th>
+              <th className="border px-4 py-2">Email</th>
+              <th className="border px-4 py-2">Phone</th>
+              <th className="border px-4 py-2">Address</th>
+              <th className="border px-4 py-2">DOB</th>
+              <th className="border px-4 py-2">Created</th>
+              {title === "Users" && <th className="border px-4 py-2">Points</th>}
+              <th className="border px-4 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentData.length > 0 ? (
+              currentData.map(user => (
+                <tr key={user.id} className="text-center hover:bg-gray-50">
+                  <td className="border px-4 py-2">{user.id}</td>
+                  <td className="border px-4 py-2">{user.username}</td>
+                  <td className="border px-4 py-2">{user.email}</td>
+                  <td className="border px-4 py-2">{user.phone_number}</td>
+                  <td className="border px-4 py-2">{user.address}</td>
+                  <td className="border px-4 py-2">{user.date_of_birth}</td>
+                  <td className="border px-4 py-2">{user.created_date}</td>
+                  {title === "Users" && <td className="border px-4 py-2">{user.points}</td>}
+                  <td className="border px-4 py-2 space-x-2">
+                    <button className="px-2 py-1 bg-blue-500 text-white rounded">Edit</button>
+                    <button onClick={() => handleDelete(user.id)} className="px-2 py-1 bg-red-500 text-white rounded">Delete</button>
+                    {user.role === "user" && (
+                      <>
+                        <button className="px-2 py-1 bg-yellow-500 text-white rounded">Update Password</button>
+                        {showUpload && (
+                          <button className="px-2 py-1 bg-purple-500 text-white rounded">Upload</button>
+                        )}
+                      </>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={title === "Users" ? 9 : 8} className="text-center py-4 text-gray-500 italic">
+                  No {title.toLowerCase()} found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        <div className="flex justify-between items-center mt-6">
+          <button
+            disabled={currentPage === 1}
+            onClick={() => setPage(currentPage - 1)}
+            className={`px-4 py-2 rounded-lg ${currentPage === 1 ? "bg-gray-300" : "bg-green-600 text-white hover:bg-green-700"}`}
+          >
+            Prev
+          </button>
+          <p className="text-gray-600">Page {currentPage} of {totalPages}</p>
+          <button
+            disabled={currentPage === totalPages}
+            onClick={() => setPage(currentPage + 1)}
+            className={`px-4 py-2 rounded-lg ${currentPage === totalPages ? "bg-gray-300" : "bg-green-600 text-white hover:bg-green-700"}`}
+          >
+            Next
+          </button>
+        </div>
       </div>
     );
-  }
+  };
+
+  const chartData = [
+    { name: "Admins", value: users.filter(u => u.role === "admin").length },
+    { name: "Users", value: users.filter(u => u.role === "user").length },
+  ];
+
+  const totalAdminPages = Math.ceil(admins.length / itemsPerPage) || 1;
+  const totalUserPages = Math.ceil(normalUsers.length / itemsPerPage) || 1;
 
   return (
-    <div className="py-16 px-6 bg-gradient-to-b from-green-50 to-green-100 min-h-screen">
-      <h2 className="text-3xl font-bold text-green-700 text-center mb-8">
-        Nearby Recycling Centers
-      </h2>
-
-      <div className="max-w-md mx-auto mb-10 flex items-center bg-white shadow-md rounded-full px-4 py-2">
-        <Search className="h-5 w-5 text-green-600 mr-2" />
-        <input
-          type="text"
-          placeholder="Search by name, address or category..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full outline-none bg-transparent text-gray-700"
-        />
+    <section className="min-h-screen bg-gray-50 py-16 px-6">
+      <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
+        <ResponsiveContainer width="100%" height={250}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={80}
+              label
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+            <Legend verticalAlign="bottom" />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
-        {filteredCenters.map((center, index) => (
-          <motion.div
-            key={center.id}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1, duration: 0.5 }}
-            className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition"
-          >
-            <h3 className="text-xl font-semibold text-green-800 mb-2 flex items-center gap-2">
-              <Recycle className="h-5 w-5 text-green-600" />
-              {center.name}
-            </h3>
-            <span className="inline-block bg-green-100 text-green-700 text-xs font-medium px-3 py-1 rounded-full mb-3">
-              {center.category}
-            </span>
-            <p className="text-gray-600 flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-green-600" />
-              {center.address}
-            </p>
-            {center.phone && (
-              <p className="text-gray-600 flex items-center gap-2 mt-1">
-                <Phone className="h-4 w-4 text-green-600" />
-                {center.phone}
-              </p>
-            )}
-            {center.hours && (
-              <p className="text-gray-600 flex items-center gap-2 mt-1">
-                <Clock className="h-4 w-4 text-green-600" />
-                {center.hours}
-              </p>
-            )}
-            <div className="mt-4 flex justify-end">
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${center.latitude},${center.longitude}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 bg-green-700 text-white text-sm font-semibold rounded-lg hover:bg-green-800 transition"
-              >
-                Open in Maps
-              </a>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {filteredCenters.length === 0 && (
-        <p className="text-center text-gray-600 mt-10">
-          No recycling centers found.
-        </p>
+      {renderTable(
+        "Admins", admins, adminPage, setAdminPage, totalAdminPages,
+        searchAdmin, setSearchAdmin, sortFieldAdmin, setSortFieldAdmin, sortOrderAdmin, setSortOrderAdmin, false
       )}
-    </div>
+      {renderTable(
+        "Users", normalUsers, userPage, setUserPage, totalUserPages,
+        searchUser, setSearchUser, sortFieldUser, setSortFieldUser, sortOrderUser, setSortOrderUser, true
+      )}
+
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h3 className="text-lg font-semibold mb-4">Add New {newUserRole === "admin" ? "Admin" : "User"}</h3>
+            <div className="flex flex-col gap-4">
+              <input
+                type="text"
+                placeholder="Username"
+                value={newUserData.username || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, username: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.username && <p className="text-red-500 text-sm">{formErrors.username}</p>}
+
+              <input
+                type="email"
+                placeholder="Email"
+                value={newUserData.email || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={newUserData.password || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
+
+              <input
+                type="text"
+                placeholder="Phone Number"
+                value={newUserData.phone_number || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, phone_number: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.phone_number && <p className="text-red-500 text-sm">{formErrors.phone_number}</p>}
+
+              <input
+                type="text"
+                placeholder="Address"
+                value={newUserData.address || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, address: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.address && <p className="text-red-500 text-sm">{formErrors.address}</p>}
+
+              <input
+                type="date"
+                value={newUserData.date_of_birth || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, date_of_birth: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.date_of_birth && <p className="text-red-500 text-sm">{formErrors.date_of_birth}</p>}
+            </div>
+
+            <div className="flex justify-end mt-4 gap-2">
+              <button
+                onClick={() => { setShowModal(false); setNewUserData({}); setFormErrors({}); }}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddUser}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
-}
+} 
