@@ -1,4 +1,3 @@
-// src/pages/Uploads.tsx
 import { useState, useRef } from "react";
 
 export default function Uploads() {
@@ -37,6 +36,13 @@ export default function Uploads() {
 
     e.target.value = ""; // reset input
     setCurrentFileId(null);
+  };
+
+  // ✅ NEW: handle view
+  const handleView = (file: { id: number; filename: string; uploadedBy: string; date: string }) => {
+    alert(`📄 File: ${file.filename}\n👤 Uploaded By: ${file.uploadedBy}\n📅 Date: ${file.date}`);
+    // Later if you have file URLs:
+    // window.open(file.url, "_blank");
   };
 
   // Filter files by "uploadedBy"
@@ -84,7 +90,10 @@ export default function Uploads() {
                   <td className="py-3 px-4">{file.uploadedBy}</td>
                   <td className="py-3 px-4">{file.date}</td>
                   <td className="py-3 px-4 space-x-2">
-                    <button className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600">
+                    <button
+                      onClick={() => handleView(file)} // ✅ FIXED
+                      className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
                       View
                     </button>
                     <button

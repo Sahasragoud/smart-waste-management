@@ -36,7 +36,16 @@ function App() {
           <Route path="/results" element={<Results />} />
           <Route path="/centers" element={<Centers />} />
           <Route path="/rewards" element={<Rewards />} />
-           <Route path="/leaderboard" element={<Leaderboard />} />
+
+          {/* Leaderboard (protected for both user & admin) */}
+          <Route
+            path="/leaderboard"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin"]}>
+                <Leaderboard />
+              </ProtectedRoute>
+            }
+          />
 
           {/* User Dashboard (protected) */}
           <Route
@@ -67,22 +76,26 @@ function App() {
               </ProtectedRoute>
             }
           />
-<Route
-  path="/admin/uploads"
-  element={
-    <ProtectedRoute allowedRoles={["admin"]}>
-      <Uploads />
-    </ProtectedRoute>
-  }
-/>
-  <Route
-  path="/admin/rewards"
-  element={
-    <ProtectedRoute allowedRoles={["admin"]}>
-      <RewardsAdmin />
-    </ProtectedRoute>
-  }
-/>
+
+          {/* Admin Uploads */}
+          <Route
+            path="/admin/uploads"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <Uploads />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Rewards */}
+          <Route
+            path="/admin/rewards"
+            element={
+              <ProtectedRoute allowedRoles={["admin"]}>
+                <RewardsAdmin />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
 
