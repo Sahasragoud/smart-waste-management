@@ -15,12 +15,9 @@ export default function Centers() {
   const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
   const categories = [
-    "office.government.environment",
-    "power.plant.waste",
-    "service.recycling",
-    "service.recycling.container",
+   
     "service.recycling.centre",
-    "service.recycling.bin",
+    
   ];
 
   const fetchCentres = async (lat: number, lng: number, radius: number = 2000) => {
