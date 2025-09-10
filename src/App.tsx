@@ -16,6 +16,7 @@ import ProtectedRoute from "./components/protectedRoute";
 import Users from "./pages/Users";
 import Uploads from "./pages/Uploads";
 import RewardsAdmin from "./pages/RewardsAdmin.tsx";
+import Leaderboard from "./pages/Leaderboard.tsx";
 
 function App() {
   return (
@@ -29,12 +30,13 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-
+          
           {/* User pages */}
           <Route path="/scan" element={<Scan />} />
           <Route path="/results" element={<Results />} />
           <Route path="/centers" element={<Centers />} />
           <Route path="/rewards" element={<Rewards />} />
+           <Route path="/leaderboard" element={<Leaderboard />} />
 
           {/* User Dashboard (protected) */}
           <Route

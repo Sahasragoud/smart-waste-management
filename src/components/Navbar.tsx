@@ -75,6 +75,10 @@ export default function Navbar() {
     links.push({ to: "/admin/users", label: "Users" });
     links.push({ to: "/admin/uploads", label: "Uploads" });
     links.push({ to: "/admin/rewards", label: "Rewards" });
+    <Link to="/leaderboard" className="hover:text-green-600">
+  Leaderboard
+</Link>
+
   } else {
     links.push({ to: "/dashboard", label: "Dashboard" });
     links.push({ to: "/scan", label: "Scans" });
