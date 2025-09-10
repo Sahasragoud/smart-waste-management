@@ -11,14 +11,15 @@ import {
   FaSun,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import type { User } from "../types/user";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<User>();
+  const [user, setUser] = useState<any>(null);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  // Dark mode state
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem("darkMode");
     return saved === "true";
@@ -31,14 +32,16 @@ export default function Navbar() {
   const points = user?.points || 0;
   const isLoggedIn = !!role;
 
-  // Dark mode effect
+  // Apply dark mode to entire webpage
   useEffect(() => {
-    localStorage.setItem("darkMode", darkMode.toString());
-    if (darkMode) document.documentElement.classList.add("dark");
-    else document.documentElement.classList.remove("dark");
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [darkMode]);
 
-  // Close profile dropdown when clicking outside
+  // Close profile dropdown if click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -63,7 +66,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    setUser(undefined);
+    setUser(null);
     navigate("/login");
   };
 
@@ -85,9 +88,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav
-      className={`bg-green-900 text-white shadow-lg sticky top-0 z-50 font-sans dark:bg-gray-900 dark:text-gray-100`}
-    >
+    <nav className="bg-green-900 dark:bg-gray-900 text-white shadow-lg sticky top-0 z-50 font-sans">
       <div className="container mx-auto flex justify-between items-center px-6 py-4">
         {/* Logo */}
         <Link
@@ -105,7 +106,7 @@ export default function Navbar() {
               to={link.to}
               className={`py-2 px-4 rounded-md transition duration-300 ${
                 location.pathname === link.to
-                  ? "bg-green-700 text-green-100 font-semibold"
+                  ? "bg-green-700 text-green-300 font-semibold"
                   : "hover:bg-green-700 hover:text-green-100"
               }`}
             >
@@ -114,47 +115,30 @@ export default function Navbar() {
           ))}
 
           {isLoggedIn && (
-            <div className="flex items-center space-x-4 relative" ref={profileRef}>
-              {/* Notification Bell */}
-              <motion.div
-                key={points}
-                initial={{ scale: 1 }}
-                animate={{ scale: [1, 1.4, 1] }}
-                transition={{ duration: 0.5, ease: "easeInOut" }}
-                className="relative"
-              >
+            <div className="flex items-center space-x-6 relative" ref={profileRef}>
+              {/* Notification icon */}
+              <div className="relative">
                 <FaBell className="text-2xl cursor-pointer hover:text-green-300 transition" />
                 {points > 0 && (
-                  <motion.span
-                    key={points + "badge"}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 20 }}
-                    className={`absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold ${
-                      points < 50
-                        ? "bg-green-500"
-                        : points <= 100
-                        ? "bg-yellow-500"
-                        : "bg-red-500"
-                    }`}
-                    title={`${points} points`}
-                  >
+                  <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                     {points}
-                  </motion.span>
+                  </span>
                 )}
-              </motion.div>
+              </div>
 
               {/* Dark/Light Mode Toggle */}
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={() => {
+                  setDarkMode(!darkMode);
+                  localStorage.setItem("darkMode", (!darkMode).toString());
+                }}
                 className="text-lg p-2 rounded-md hover:bg-green-700 transition"
-                title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
               >
                 {darkMode ? <FaSun /> : <FaMoon />}
               </button>
 
               {/* Profile Dropdown */}
-              <div className="relative group">
+              <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
                   className="flex items-center space-x-2 w-auto px-2 py-1 rounded-full bg-green-700 hover:bg-green-600 transition shadow-md"
@@ -224,8 +208,8 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className={`block text-lg py-2 px-4 rounded-md transition ${
                   location.pathname === link.to
-                    ? "bg-green-700 text-green-100 font-semibold dark:bg-gray-700 dark:text-green-200"
-                    : "hover:bg-green-700 hover:text-green-100 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+                    ? "bg-green-700 text-green-100 font-semibold"
+                    : "hover:bg-green-700 hover:text-green-100"
                 }`}
               >
                 {link.label}
@@ -233,28 +217,8 @@ export default function Navbar() {
             ))}
 
             {isLoggedIn && (
-              <div className="border-t border-green-700 dark:border-gray-700 pt-2 flex flex-col space-y-2">
-                {/* Notification Bell */}
-                <div className="flex items-center space-x-2 px-4 py-2">
-                  <FaBell className="text-xl" />
-                  {points > 0 && (
-                    <span className="bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-bold">
-                      {points}
-                    </span>
-                  )}
-                  <span className="font-medium text-white">{username}</span>
-                </div>
-
-                {/* Dark Mode Toggle */}
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  className="flex items-center px-4 py-2 text-white hover:bg-green-700 dark:hover:bg-gray-700 rounded-md transition"
-                >
-                  {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
-                  {darkMode ? "Light Mode" : "Dark Mode"}
-                </button>
-
-                {/* Profile Links */}
+              <div className="border-t border-green-700 pt-2 flex flex-col space-y-2">
+                <span className="block px-4 py-2 text-white font-medium">{username}</span>
                 <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
@@ -270,13 +234,21 @@ export default function Navbar() {
                   <FaCog className="mr-2" /> Settings
                 </Link>
                 <button
-                  onClick={() => {
-                    handleLogout();
-                    setIsOpen(false);
-                  }}
+                  onClick={handleLogout}
                   className="w-full px-4 py-2 text-left text-white hover:bg-green-700 dark:hover:bg-gray-700 rounded-md transition"
                 >
                   Logout
+                </button>
+                {/* Dark Mode Toggle */}
+                <button
+                  onClick={() => {
+                    setDarkMode(!darkMode);
+                    localStorage.setItem("darkMode", (!darkMode).toString());
+                  }}
+                  className="flex items-center px-4 py-2 text-white hover:bg-green-700 dark:hover:bg-gray-700 rounded-md transition"
+                >
+                  {darkMode ? <FaSun className="mr-2" /> : <FaMoon className="mr-2" />}
+                  {darkMode ? "Light Mode" : "Dark Mode"}
                 </button>
               </div>
             )}
