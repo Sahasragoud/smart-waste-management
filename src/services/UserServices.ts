@@ -10,16 +10,3 @@ export const resetPassword = (token :string, newPassword: string) => API.post<st
 export const updatePassword = (userId: number,updateFields : UpdatePassword)=> API.put(`users/${userId}/updatePassword`,updateFields);
 export const updateProfile = (userId : number, updateFields : Partial<UpdateProfile>) => API.put(`users/${userId}/updateProfile`, updateFields);
 export const getUser = (userId : number) => API.get<User>(`users/by-id?id=${userId}`);
-export const deleteUser = (userId : number) => API.delete(`admin/user/${userId}`);
-export const getUsers = (
-    page : number=0, 
-    size : number = 9, 
-    sortField : string ="id",
-    sortDirection : string ="asc"
-    ) => {
-        return API.get(
-            `admin/users?page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`
-        );
-    }    
-
-    // export const createUser = (userData : UserFormData) => API.post<UserFormData>(`admin/user/create`, userData);

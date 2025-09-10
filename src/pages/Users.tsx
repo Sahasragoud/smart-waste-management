@@ -1,3 +1,4 @@
+// import React, { useEffect } from "react";
 import { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
@@ -28,6 +29,13 @@ export default function Users() {
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [search, setSearch] = useState<string>("");
 
+//   const fetchUsers = React.useCallback(() =>{
+//     const res = await 
+//   }
+// )
+//   useEffect(() => {
+//     fetchUsers();
+//   }, [fetchUsers])
   const admins = users.filter(u => u.role === "admin" && u.username.toLowerCase().includes(search.toLowerCase()));
   const normalUsers = users.filter(u => u.role === "user" && u.username.toLowerCase().includes(search.toLowerCase()));
 
