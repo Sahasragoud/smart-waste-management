@@ -2,12 +2,13 @@ import type { User } from '../types/user';
 import API from './api';
 
 export const createMember = (request : User) => {API.post(`admin/create`,request)};
-export const getUsers = (
+export const getUsersByRole = (
+    role : string = "users",
     page : number ,
     size : number,
     sortField : string,
     sortDirection :string
-) => API.get(`admin/users?page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`);
+) => API.get(`admin/users/by-role=${role}?page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`);
 
 export const deleteUser = (userId : number) => API.delete(`admin/user/${userId}`);
 

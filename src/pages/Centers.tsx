@@ -15,8 +15,7 @@ export default function Centers() {
   const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
   const categories = [
-    "service.recycling",
-    "service.recycling.container",
+   
     "service.recycling.centre",
     "service.recycling.bin",
   ];
