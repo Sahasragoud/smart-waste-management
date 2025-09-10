@@ -19,7 +19,7 @@ import java.util.Optional;
 @Service
 public interface UploadService {
     public UploadResponse createUpload(UploadRequest request, MultipartFile file) throws UserNotFoundException, IOException;
-    Page<Uploads> getUploadsByUserId(Long userId,Pageable pageable) throws UserNotFoundException;
+    Page<UploadResponse> getUploadsByUserId(Long userId,Pageable pageable) throws UserNotFoundException;
     Optional<Uploads> getUploadById(Long id);
     ResponseEntity<Resource> getImage(Long id) throws UploadNotFoundException, MalformedURLException;
 }

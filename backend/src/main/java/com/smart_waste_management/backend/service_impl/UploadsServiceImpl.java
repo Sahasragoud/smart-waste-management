@@ -89,11 +89,27 @@ public class UploadsServiceImpl implements UploadService {
     }
 
     @Override
-    public Page<Uploads> getUploadsByUserId(Long userId, Pageable pageable) throws UserNotFoundException {
+    public Page<UploadResponse> getUploadsByUserId(Long userId, Pageable pageable) throws UserNotFoundException {
+        // 1️⃣ Fetch user
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User Not found with id" + userId));
-        return uploadsRepository.findAllByUserId(userId,pageable);
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+
+        // 2️⃣ Get uploads from DB
+        Page<Uploads> uploadsPage = uploadsRepository.findAllByUserId(userId, pageable);
+
+        // 3️⃣ Map Uploads entity to UploadResponse DTO
+        return uploadsPage.map(upload -> new UploadResponse(
+                upload.getFileName(),
+                upload.getFileType(),
+                upload.getFileSize(),
+                upload.getFilePath(),
+                userId,
+                upload.getCategory(),       // can be null initially
+                upload.getConfidence(),     // can be null initially
+                null                        // guidance, can be set later
+        ));
     }
+
 
     @Override
     public Optional<Uploads> getUploadById(Long id) {
