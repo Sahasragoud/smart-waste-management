@@ -36,6 +36,13 @@ public class Uploads {
     @JsonBackReference
     private User user;
 
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "confidence")
+    private Double confidence;
+
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -95,5 +102,21 @@ public class Uploads {
 
     public void setUser(User user) {
         this.user = user;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Double getConfidence() {
+        return confidence;
+    }
+
+    public void setConfidence(Double confidence) {
+        this.confidence = confidence;
     }
 }

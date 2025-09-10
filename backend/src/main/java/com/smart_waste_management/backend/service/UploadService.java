@@ -10,14 +10,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.Optional;
 
 @Service
 public interface UploadService {
-     UploadResponse createUpload(Long userId, UploadRequest request) throws UserNotFoundException;
+    public UploadResponse createUpload(UploadRequest request, MultipartFile file) throws UserNotFoundException, IOException;
     Page<Uploads> getUploadsByUserId(Long userId,Pageable pageable) throws UserNotFoundException;
     Optional<Uploads> getUploadById(Long id);
     ResponseEntity<Resource> getImage(Long id) throws UploadNotFoundException, MalformedURLException;
-
 }

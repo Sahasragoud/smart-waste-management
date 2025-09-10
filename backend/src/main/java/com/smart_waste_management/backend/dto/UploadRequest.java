@@ -11,8 +11,6 @@ public class UploadRequest {
 
     private String fileName;
     private String fileType;
-    private String fileSize;
-    private String filePath;
     private Long userId;
 
     public String getFileName() {
@@ -29,26 +27,6 @@ public class UploadRequest {
 
     public void setFileType(String fileType) {
         this.fileType = fileType;
-    }
-
-    public String getFileSize() {
-        return fileSize;
-    }
-
-    public void setFileSize(String fileSize) {
-        this.fileSize = fileSize;
-    }
-
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
-    public Long getUserId() {
-        return userId;
     }
 
     public void setUserId(Long userId) {

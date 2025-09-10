@@ -38,24 +38,31 @@ public class UploadsController {
     public UploadResponse createUpload(@PathVariable Long userId,
                                        @RequestParam("file") MultipartFile file
     ) throws UserNotFoundException, IOException {
+
+        // 1️⃣ Prepare upload directory
         String uploadDir = "uploads/";
         Path uploadPath = Paths.get(uploadDir);
 
-        if(!Files.exists(uploadPath)){
+        if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        String filePath = uploadDir + System.currentTimeMillis() +"_" + file.getOriginalFilename();
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING);
+        // 2️⃣ Save file physically
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path filePath = uploadPath.resolve(fileName);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
+        // 3️⃣ Prepare UploadRequest (just to carry userId and file info if needed)
         UploadRequest request = new UploadRequest();
-        request.setFileName(file.getOriginalFilename());
+        request.setUserId(userId);
+        request.setFileName(fileName);
         request.setFileType(file.getContentType());
-        request.setFileSize(String.valueOf(file.getSize()));
-        request.setFilePath(filePath);
 
-        return uploadService.createUpload(userId, request);
+
+        // 4️⃣ Call service with request + MultipartFile
+        return uploadService.createUpload(request, file);
     }
+
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping("/{userId}")

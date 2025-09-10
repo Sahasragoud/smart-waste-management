@@ -47,7 +47,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("user/{userId}")
+    @DeleteMapping("/user/{userId}")
     public void deleteUser(@PathVariable Long userId) throws UserNotFoundException {
         adminService.deleteUser(userId);
     }
@@ -66,7 +66,7 @@ public class AdminController {
     }
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/upload/{id}")
     public void deleteUpload(@PathVariable Long id){
         adminService.deleteUpload(id);
     }

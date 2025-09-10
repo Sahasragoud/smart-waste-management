@@ -9,13 +9,20 @@ public class UploadResponse {
     private Long fileSize;
     private String filePath;
     private Long userId;
+    private String category;
+    private Double confidence;
+    private String guidance;  // optional for frontend
 
-    public UploadResponse(String fileName, String fileType, Long fileSize, String filePath, Long userId) {
+
+    public UploadResponse(String fileName, String fileType, Long fileSize, String filePath, Long userId, String category, Double confidence, String guidance) {
         this.fileName = fileName;
         this.fileType = fileType;
         this.fileSize = fileSize;
         this.filePath = filePath;
         this.userId = userId;
+        this.category = category;
+        this.confidence = confidence;
+        this.guidance = guidance;
     }
 
     public String getFileName() {

@@ -16,7 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -33,18 +37,55 @@ public class UploadsServiceImpl implements UploadService {
     }
 
     @Override
-    public UploadResponse createUpload(Long userId, UploadRequest request) throws UserNotFoundException {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User Not found with id" + userId));
+    public UploadResponse createUpload(UploadRequest request, MultipartFile file) throws UserNotFoundException, IOException {
+        //  Find user
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new UserNotFoundException("User not found with id " + request.getUserId()));
+
+        //  Save file physically
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+        Path uploadDir = Paths.get("uploads/"); // you can use application.properties
+        Files.createDirectories(uploadDir);
+        Path filePath = uploadDir.resolve(fileName);
+        Files.write(filePath, file.getBytes());
+
+        // Mock AI prediction
+        String category = "plastic"; // mock category
+        Double confidence = 0.92;    // mock confidence
+
+        // Save Upload entity
         Uploads upload = new Uploads();
         upload.setUser(user);
-        upload.setFileName(request.getFileName());
-        upload.setFileType(request.getFileType());
-        upload.setFilePath(request.getFilePath());
-        upload.setFileSize(Long.valueOf(request.getFileSize()));
+        upload.setFileName(fileName);
+        upload.setFileType(file.getContentType());
+        upload.setFileSize(file.getSize());
+        upload.setFilePath(filePath.toString());
+        upload.setCategory(category);
+        upload.setConfidence(confidence);
+
         uploadsRepository.save(upload);
 
-        return new UploadResponse(upload.getFileName(), upload.getFileType(),  upload.getFileSize(),upload.getFilePath(), userId);
+        //  Prepare UploadResponse with guidance
+        return new UploadResponse(
+                upload.getFileName(),
+                upload.getFileType(),
+                upload.getFileSize(),
+                upload.getFilePath(),
+                user.getId(),
+                category,
+                confidence,
+                getGuidance(category)
+        );
+    }
+
+    // Optional guidance method
+    private String getGuidance(String category) {
+        switch (category.toLowerCase()) {
+            case "plastic": return "Dispose in yellow bin.";
+            case "paper": return "Place in blue bin.";
+            case "organic": return "Use green bin or compost.";
+            default: return "Dispose responsibly.";
+        }
     }
 
     @Override
