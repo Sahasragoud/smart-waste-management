@@ -1,5 +1,3 @@
-
-
 import { useEffect, useState } from "react";
 
 interface Centre {
@@ -23,7 +21,12 @@ export default function Centers() {
     "service.recycling.bin",
   ];
 
-  const fetchCentres = async (lat: number, lng: number, radius: number = 10000) => {
+  const fetchCentres = async (
+    lat: number,
+    lng: number,
+    radius: number = 10000,
+    allCentres: Centre[] = []
+  ): Promise<void> => {
     if (!apiKey) {
       setLocationStatus("❌ Missing API key! Please set VITE_GEOAPIFY_API_KEY in .env");
       return;
@@ -32,20 +35,22 @@ export default function Centers() {
     try {
       const categoryParam = categories.join(",");
       const url = `https://api.geoapify.com/v2/places?categories=${categoryParam}&filter=circle:${lng},${lat},${radius}&limit=50&apiKey=${apiKey}`;
+
       const res = await fetch(url);
       const data = await res.json();
 
       if (!data.features || data.features.length === 0) {
         if (radius < 100000) {
           setLocationStatus(`Expanding search radius to ${radius * 2 / 1000} km...`);
-          fetchCentres(lat, lng, radius * 2);
+          return fetchCentres(lat, lng, radius * 2, allCentres);
         } else {
-          setLocationStatus("No centres found nearby ❌");
+          if (allCentres.length === 0) setLocationStatus("No centres found nearby ❌");
+          return;
         }
-        return;
       }
 
-      const centresList: Centre[] = data.features.map((place: any) => ({
+      // Map new centres
+      const newCentres: Centre[] = data.features.map((place: any) => ({
         id: place.properties.place_id,
         name: place.properties.name || "Unnamed Centre",
         address: `${place.properties.street || ""}, ${place.properties.city || ""}`,
@@ -53,8 +58,26 @@ export default function Centers() {
         coordinates: place.geometry.coordinates,
       }));
 
-      setCentres(centresList);
-      setLocationStatus("Showing centres near your location 🌍");
+      // Merge with previous results (avoid duplicates)
+      const merged = [
+        ...allCentres,
+        ...newCentres.filter((c) => !allCentres.some((ac) => ac.id === c.id)),
+      ];
+
+      if (radius < 100000) {
+        // Try a larger radius to get more centres
+        return fetchCentres(lat, lng, radius * 2, merged);
+      } else {
+        // Final list
+        setCentres(
+          merged.sort((a, b) => {
+            const distA = typeof a.distance === "number" ? a.distance : Infinity;
+            const distB = typeof b.distance === "number" ? b.distance : Infinity;
+            return distA - distB;
+          })
+        );
+        setLocationStatus("Showing centres near your location 🌍");
+      }
     } catch (err) {
       console.error("❌ Error fetching centres:", err);
       setLocationStatus("Error fetching centres ❌");
@@ -87,15 +110,13 @@ export default function Centers() {
         setLocationStatus("Geolocation not supported ❌");
       }
     };
-
     getLocation();
   }, []);
 
-  // Generate a Google Maps URL that shows all centres
+  // Open all centres on Google Maps
   const openAllInGoogleMaps = () => {
     if (centres.length === 0) return;
 
-    // Google Maps multi-marker URL: https://www.google.com/maps/dir/?api=1&destination=lat,lng&waypoints=lat1,lng1|lat2,lng2
     const origin = centres[0].coordinates;
     const waypoints = centres
       .slice(1)
@@ -108,8 +129,7 @@ export default function Centers() {
 
   const openSingleInGoogleMaps = (coords: [number, number]) => {
     const [lng, lat] = coords;
-    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
-    window.open(url, "_blank");
+    window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, "_blank");
   };
 
   return (
@@ -174,34 +194,5 @@ export default function Centers() {
     </section>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
