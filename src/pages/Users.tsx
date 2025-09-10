@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
@@ -22,7 +23,7 @@ const mockUsers: User[] = [
   { id: 6, username: "Charlie", email: "charlie@example.com", phone_number: "8765432190", address: "Chennai", date_of_birth: "2000-11-02", created_date: "2025-08-30", points: 3, role: "user" },
 ];
 
-const COLORS = ["#34D399", "#3B82F6"]; // green = users, blue = admins
+const COLORS = ["#34D399", "#3B82F6"];
 
 export default function Users() {
   const [users, setUsers] = useState<User[]>(mockUsers);
@@ -65,7 +66,7 @@ export default function Users() {
       address: newUserData.address!,
       date_of_birth: newUserData.date_of_birth!,
       created_date: new Date().toISOString().split("T")[0],
-      points: newUserRole === "user" ? 0 : 0,
+      points: 0,
       role: newUserRole,
     };
 
@@ -82,7 +83,7 @@ export default function Users() {
 
     return (
       <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
-        <h2 className="text-xl font-bold mb-4">{title}</h2>
+        <h2 className="text-xl font-semibold mb-4">{title}</h2>
 
         <div className="mb-4 text-center">
           <input
@@ -155,9 +156,7 @@ export default function Users() {
           >
             Prev
           </button>
-          <p className="text-gray-600">
-            Page {currentPage} of {totalPages}
-          </p>
+          <p className="text-gray-600">Page {currentPage} of {totalPages}</p>
           <button
             disabled={currentPage === totalPages}
             onClick={() => setPage(currentPage + 1)}
@@ -181,8 +180,18 @@ export default function Users() {
   return (
     <section className="min-h-screen bg-gray-50 py-16 px-6">
       <div className="flex justify-end gap-4 mb-6">
-        <button onClick={() => { setNewUserRole("admin"); setShowModal(true); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg">+ Add Admin</button>
-        <button onClick={() => { setNewUserRole("user"); setShowModal(true); }} className="px-4 py-2 bg-green-600 text-white rounded-lg">+ Add User</button>
+        <button
+          onClick={() => { setNewUserRole("admin"); setShowModal(true); }}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+        >
+          + Add Admin
+        </button>
+        <button
+          onClick={() => { setNewUserRole("user"); setShowModal(true); }}
+          className="px-4 py-2 bg-green-600 text-white rounded-lg"
+        >
+          + Add User
+        </button>
       </div>
 
       <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
@@ -213,7 +222,7 @@ export default function Users() {
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-1/3">
-            <h3 className="text-lg font-bold mb-4">Add New {newUserRole === "admin" ? "Admin" : "User"}</h3>
+            <h3 className="text-lg font-semibold mb-4">Add New {newUserRole === "admin" ? "Admin" : "User"}</h3>
             <div className="flex flex-col gap-4">
               <input
                 type="text"
@@ -223,6 +232,7 @@ export default function Users() {
                 className="border px-3 py-2 rounded"
               />
               {formErrors.username && <p className="text-red-500 text-sm">{formErrors.username}</p>}
+
               <input
                 type="email"
                 placeholder="Email"
@@ -231,6 +241,7 @@ export default function Users() {
                 className="border px-3 py-2 rounded"
               />
               {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
+
               <input
                 type="text"
                 placeholder="Phone Number"
@@ -239,6 +250,7 @@ export default function Users() {
                 className="border px-3 py-2 rounded"
               />
               {formErrors.phone_number && <p className="text-red-500 text-sm">{formErrors.phone_number}</p>}
+
               <input
                 type="text"
                 placeholder="Address"
@@ -247,6 +259,7 @@ export default function Users() {
                 className="border px-3 py-2 rounded"
               />
               {formErrors.address && <p className="text-red-500 text-sm">{formErrors.address}</p>}
+
               <input
                 type="date"
                 value={newUserData.date_of_birth || ""}
@@ -257,8 +270,18 @@ export default function Users() {
             </div>
 
             <div className="flex justify-end mt-4 gap-2">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-300 rounded">Cancel</button>
-              <button onClick={handleAddUser} className="px-4 py-2 bg-green-600 text-white rounded">Add</button>
+              <button
+                onClick={() => { setShowModal(false); setNewUserData({}); setFormErrors({}); }}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddUser}
+                className="px-4 py-2 bg-green-600 text-white rounded"
+              >
+                Add
+              </button>
             </div>
           </div>
         </div>
@@ -266,3 +289,4 @@ export default function Users() {
     </section>
   );
 }
+
