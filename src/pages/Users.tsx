@@ -5,6 +5,7 @@ interface User {
   id: number;
   username: string;
   email: string;
+  password?: string;
   phone_number: string;
   address: string;
   date_of_birth: string;
@@ -14,20 +15,11 @@ interface User {
 }
 
 const mockUsers: User[] = [
-  { id: 1, username: "Sahara", email: "example@gmail.com", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
-  { id: 2, username: "NewAdmin1", email: "newadmin@example.com", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
-  { id: 3, username: "NewAdmin2", email: "newadmin2@example.com", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
-  { id: 4, username: "Alice", email: "alice@example.com", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
-  { id: 5, username: "Bob", email: "bob@example.com", phone_number: "9876543210", address: "Mumbai", date_of_birth: "1995-05-21", created_date: "2025-08-30", points: 8, role: "user" },
-  { id: 6, username: "Charlie", email: "charlie@example.com", phone_number: "8765432190", address: "Chennai", date_of_birth: "2000-11-02", created_date: "2025-08-30", points: 3, role: "user" },
-  { id: 7, username: "Sahara", email: "example@gmail.com", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
-  { id: 8, username: "NewAdmin1", email: "newadmin@example.com", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
-  { id: 9, username: "NewAdmin2", email: "newadmin2@example.com", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
-  { id: 10, username: "Alice", email: "alice@example.com", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
-  { id: 11, username: "Bob", email: "bob@example.com", phone_number: "9876543210", address: "Mumbai", date_of_birth: "1995-05-21", created_date: "2025-08-30", points: 8, role: "user" },
-  { id: 12, username: "Charlie", email: "charlie@example.com", phone_number: "8765432190", address: "Chennai", date_of_birth: "2000-11-02", created_date: "2025-08-30", points: 3, role: "user" },
+  { id: 1, username: "Sahara", email: "example@gmail.com", password: "pass123", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
+  { id: 2, username: "NewAdmin1", email: "newadmin@example.com", password: "adminpass", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
+  { id: 3, username: "NewAdmin2", email: "newadmin2@example.com", password: "adminpass2", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
+  { id: 4, username: "Alice", email: "alice@example.com", password: "alicepass", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
 ];
-
 
 const COLORS = ["#34D399", "#3B82F6"];
 
@@ -57,7 +49,7 @@ export default function Users() {
 
   const handleAddUser = () => {
     const errors: Record<string, string> = {};
-    const requiredFields = ["username", "email", "phone_number", "address", "date_of_birth"];
+    const requiredFields = ["username", "email", "phone_number", "address", "date_of_birth", "password"];
 
     requiredFields.forEach((field) => {
       if (!newUserData[field as keyof User]) {
@@ -74,6 +66,7 @@ export default function Users() {
       id: users.length + 1,
       username: newUserData.username!,
       email: newUserData.email!,
+      password: newUserData.password!,
       phone_number: newUserData.phone_number!,
       address: newUserData.address!,
       date_of_birth: newUserData.date_of_birth!,
@@ -119,7 +112,7 @@ export default function Users() {
     return (
       <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
         <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-0">
+          <div className="flex items-center space-x-2">
             <input
               type="text"
               placeholder="Search by username..."
@@ -288,6 +281,15 @@ export default function Users() {
                 className="border px-3 py-2 rounded"
               />
               {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={newUserData.password || ""}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                className="border px-3 py-2 rounded"
+              />
+              {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
 
               <input
                 type="text"
