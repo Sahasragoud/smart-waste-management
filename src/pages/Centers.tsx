@@ -12,10 +12,8 @@ export default function Centers() {
   const [centres, setCentres] = useState<Centre[]>([]);
   const [locationStatus, setLocationStatus] = useState("Fetching location...");
 
-  // ✅ Read from .env
   const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
-  // Categories to search
   const categories = [
     "office.government.environment",
     "power.plant.waste",
@@ -25,8 +23,7 @@ export default function Centers() {
     "service.recycling.bin",
   ];
 
-  // Fetch centres from Geoapify API
-  const fetchCentres = async (lat: number, lng: number) => {
+  const fetchCentres = async (lat: number, lng: number, radius: number = 2000) => {
     if (!apiKey) {
       setLocationStatus("❌ Missing API key! Please set VITE_GEOAPIFY_API_KEY in .env");
       return;
@@ -34,24 +31,34 @@ export default function Centers() {
 
     try {
       const categoryParam = categories.join(",");
-
-      const url = `https://api.geoapify.com/v2/places?categories=${categoryParam}&filter=circle:${lng},${lat},10000&bias=proximity:${lng},${lat}&limit=10&apiKey=${apiKey}`;
+      const url = `https://api.geoapify.com/v2/places?categories=${categoryParam}&filter=circle:${lng},${lat},${radius}&bias=proximity:${lng},${lat}&limit=50&apiKey=${apiKey}`;
 
       const res = await fetch(url);
       const data = await res.json();
 
-      if (!data.features) {
-        setLocationStatus("❌ No data received from Geoapify API");
+      if (!data.features || data.features.length === 0) {
+        if (radius < 100000) {
+          setLocationStatus(`Expanding search radius to ${radius * 2 / 1000} km...`);
+          fetchCentres(lat, lng, radius * 2);
+        } else {
+          setLocationStatus("No centres found nearby ❌");
+        }
         return;
       }
 
-      const centresList: Centre[] = data.features.map((place: any) => ({
+      let centresList: Centre[] = data.features.map((place: any) => ({
         id: place.properties.place_id,
         name: place.properties.name || "Unnamed Centre",
         address: `${place.properties.street || ""}, ${place.properties.city || ""}`,
         distance: place.properties.distance || "N/A",
         coordinates: place.geometry.coordinates,
       }));
+
+      centresList = centresList.sort((a, b) => {
+        const distA = typeof a.distance === "number" ? a.distance : Infinity;
+        const distB = typeof b.distance === "number" ? b.distance : Infinity;
+        return distA - distB;
+      });
 
       setCentres(centresList);
       setLocationStatus("Showing centres near your location 🌍");
@@ -61,7 +68,6 @@ export default function Centers() {
     }
   };
 
-  // Get location (with fallback to IP)
   useEffect(() => {
     const getLocation = async () => {
       if ("geolocation" in navigator) {
@@ -95,6 +101,12 @@ export default function Centers() {
     getLocation();
   }, []);
 
+  const openInGoogleMaps = (coords: [number, number]) => {
+    const [lng, lat] = coords;
+    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+    window.open(url, "_blank");
+  };
+
   return (
     <section className="min-h-screen bg-gray-50 py-16 px-6">
       <h2 className="text-3xl font-extrabold text-green-700 text-center mb-8">
@@ -110,6 +122,7 @@ export default function Centers() {
               <th className="py-3 px-4">Name</th>
               <th className="py-3 px-4">Address</th>
               <th className="py-3 px-4">Distance (m)</th>
+              <th className="py-3 px-4">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -122,11 +135,19 @@ export default function Centers() {
                   <td className="py-3 px-4 font-semibold">{centre.name}</td>
                   <td className="py-3 px-4">{centre.address}</td>
                   <td className="py-3 px-4">{centre.distance}</td>
+                  <td className="py-3 px-4">
+                    <button
+                      onClick={() => openInGoogleMaps(centre.coordinates)}
+                      className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
+                    >
+                      Show on Map
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="py-4 text-center text-gray-500">
+                <td colSpan={4} className="py-4 text-center text-gray-500">
                   No centres found
                 </td>
               </tr>
