@@ -20,7 +20,14 @@ const mockUsers: User[] = [
   { id: 4, username: "Alice", email: "alice@example.com", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
   { id: 5, username: "Bob", email: "bob@example.com", phone_number: "9876543210", address: "Mumbai", date_of_birth: "1995-05-21", created_date: "2025-08-30", points: 8, role: "user" },
   { id: 6, username: "Charlie", email: "charlie@example.com", phone_number: "8765432190", address: "Chennai", date_of_birth: "2000-11-02", created_date: "2025-08-30", points: 3, role: "user" },
+  { id: 7, username: "Sahara", email: "example@gmail.com", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
+  { id: 8, username: "NewAdmin1", email: "newadmin@example.com", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
+  { id: 9, username: "NewAdmin2", email: "newadmin2@example.com", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
+  { id: 10, username: "Alice", email: "alice@example.com", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
+  { id: 11, username: "Bob", email: "bob@example.com", phone_number: "9876543210", address: "Mumbai", date_of_birth: "1995-05-21", created_date: "2025-08-30", points: 8, role: "user" },
+  { id: 12, username: "Charlie", email: "charlie@example.com", phone_number: "8765432190", address: "Chennai", date_of_birth: "2000-11-02", created_date: "2025-08-30", points: 3, role: "user" },
 ];
+
 
 const COLORS = ["#34D399", "#3B82F6"];
 
