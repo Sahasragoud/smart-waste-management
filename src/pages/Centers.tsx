@@ -1,344 +1,139 @@
-import { useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { useEffect, useState } from "react";
 
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  password?: string;
-  phone_number: string;
+interface Centre {
+  id: string;
+  name: string;
   address: string;
-  date_of_birth: string;
-  created_date: string;
-  points: number;
-  role: "admin" | "user";
+  distance: number | string;
+  coordinates: [number, number]; // [lng, lat]
 }
 
-const mockUsers: User[] = [
-  { id: 1, username: "Sahara", email: "example@gmail.com", password: "pass123", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
-  { id: 2, username: "NewAdmin1", email: "newadmin@example.com", password: "adminpass", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
-  { id: 3, username: "NewAdmin2", email: "newadmin2@example.com", password: "adminpass2", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
-  { id: 4, username: "Alice", email: "alice@example.com", password: "alicepass", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" },
-   { id: 5, username: "Sahara", email: "example@gmail.com", password: "pass123", phone_number: "868307713", address: "Dundigal", date_of_birth: "1999-01-01", created_date: "2025-08-30", points: 0, role: "user" },
-  { id: 6, username: "NewAdmin1", email: "newadmin@example.com", password: "adminpass", phone_number: "9999999999", address: "Some Address", date_of_birth: "1993-04-01", created_date: "2025-08-30", points: 0, role: "admin" },
-  { id: 7, username: "NewAdmin2", email: "newadmin2@example.com", password: "adminpass2", phone_number: "9876543210", address: "Hyderabad", date_of_birth: "1990-03-01", created_date: "2025-08-30", points: 5, role: "admin" },
-  { id: 8, username: "Alice", email: "alice@example.com", password: "alicepass", phone_number: "1234567890", address: "Delhi", date_of_birth: "1998-07-15", created_date: "2025-08-30", points: 12, role: "user" }
-];
+export default function Centers() {
+  const [centres, setCentres] = useState<Centre[]>([]);
+  const [locationStatus, setLocationStatus] = useState("Fetching location...");
 
-const COLORS = ["#34D399", "#3B82F6"];
+  // ✅ Read from .env
+  const apiKey = import.meta.env.VITE_GEOAPIFY_API_KEY;
 
-export default function Users() {
-  const [users, setUsers] = useState<User[]>(mockUsers);
-  const [searchAdmin, setSearchAdmin] = useState("");
-  const [searchUser, setSearchUser] = useState("");
-  const [sortFieldAdmin, setSortFieldAdmin] = useState<"username" | "points">("username");
-  const [sortFieldUser, setSortFieldUser] = useState<"username" | "points">("username");
-  const [sortOrderAdmin, setSortOrderAdmin] = useState<"asc" | "desc">("asc");
-  const [sortOrderUser, setSortOrderUser] = useState<"asc" | "desc">("asc");
-  const itemsPerPage = 5;
-  const [adminPage, setAdminPage] = useState(1);
-  const [userPage, setUserPage] = useState(1);
+  // Categories to search
+  const categories = [
+    "office.government.environment",
+    "power.plant.waste",
+    "service.recycling",
+    "service.recycling.container",
+    "service.recycling.centre",
+    "service.recycling.bin",
+  ];
 
-  const [showModal, setShowModal] = useState(false);
-  const [newUserRole, setNewUserRole] = useState<"admin" | "user">("user");
-  const [newUserData, setNewUserData] = useState<Partial<User>>({});
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-
-  const admins = users.filter(u => u.role === "admin" && u.username.toLowerCase().includes(searchAdmin.toLowerCase()));
-  const normalUsers = users.filter(u => u.role === "user" && u.username.toLowerCase().includes(searchUser.toLowerCase()));
-
-  const handleDelete = (id: number) => {
-    setUsers(users.filter(user => user.id !== id));
-  };
-
-  const handleAddUser = () => {
-    const errors: Record<string, string> = {};
-    const requiredFields = ["username", "email", "phone_number", "address", "date_of_birth", "password"];
-
-    requiredFields.forEach((field) => {
-      if (!newUserData[field as keyof User]) {
-        errors[field] = `${field.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())} is required.`;
-      }
-    });
-
-    if (Object.keys(errors).length) {
-      setFormErrors(errors);
+  // Fetch centres from Geoapify API
+  const fetchCentres = async (lat: number, lng: number) => {
+    if (!apiKey) {
+      setLocationStatus("❌ Missing API key! Please set VITE_GEOAPIFY_API_KEY in .env");
       return;
     }
 
-    const newUser: User = {
-      id: users.length + 1,
-      username: newUserData.username!,
-      email: newUserData.email!,
-      password: newUserData.password!,
-      phone_number: newUserData.phone_number!,
-      address: newUserData.address!,
-      date_of_birth: newUserData.date_of_birth!,
-      created_date: new Date().toISOString().split("T")[0],
-      points: 0,
-      role: newUserRole,
-    };
+    try {
+      const categoryParam = categories.join(",");
 
-    setUsers([...users, newUser]);
-    setShowModal(false);
-    setNewUserData({});
-    setFormErrors({});
+      const url = `https://api.geoapify.com/v2/places?categories=${categoryParam}&filter=circle:${lng},${lat},10000&bias=proximity:${lng},${lat}&limit=10&apiKey=${apiKey}`;
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (!data.features) {
+        setLocationStatus("❌ No data received from Geoapify API");
+        return;
+      }
+
+      const centresList: Centre[] = data.features.map((place: any) => ({
+        id: place.properties.place_id,
+        name: place.properties.name || "Unnamed Centre",
+        address: `${place.properties.street || ""}, ${place.properties.city || ""}`,
+        distance: place.properties.distance || "N/A",
+        coordinates: place.geometry.coordinates,
+      }));
+
+      setCentres(centresList);
+      setLocationStatus("Showing centres near your location 🌍");
+    } catch (err) {
+      console.error("❌ Error fetching centres:", err);
+      setLocationStatus("Error fetching centres ❌");
+    }
   };
 
-  const renderTable = (
-    title: string,
-    data: User[],
-    currentPage: number,
-    setPage: (p: number) => void,
-    totalPages: number,
-    search: string,
-    setSearch: (s: string) => void,
-    sortField: "username" | "points",
-    setSortField: (f: "username" | "points") => void,
-    sortOrder: "asc" | "desc",
-    setSortOrder: (o: "asc" | "desc") => void,
-    showUpload: boolean
-  ) => {
-    const filteredData = [...data].filter(user =>
-      user.username.toLowerCase().includes(search.toLowerCase())
-    );
+  // Get location (with fallback to IP)
+  useEffect(() => {
+    const getLocation = async () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+            fetchCentres(lat, lng);
+          },
+          async () => {
+            console.warn("⚠️ Location denied, using IP fallback");
 
-    const sortedData = [...filteredData].sort((a, b) =>
-      sortOrder === "asc"
-        ? a[sortField].toString().localeCompare(b[sortField].toString())
-        : b[sortField].toString().localeCompare(a[sortField].toString())
-    );
+            try {
+              const ipRes = await fetch("https://ipapi.co/json/");
+              const ipData = await ipRes.json();
+              const lat = ipData.latitude;
+              const lng = ipData.longitude;
+              setLocationStatus("Using approximate location from IP 🌐");
+              fetchCentres(lat, lng);
+            } catch (ipErr) {
+              console.error("❌ Error with IP location:", ipErr);
+              setLocationStatus("Unable to get location ❌");
+            }
+          }
+        );
+      } else {
+        setLocationStatus("Geolocation not supported ❌");
+      }
+    };
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentData = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+    getLocation();
+  }, []);
 
-    return (
-      <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center space-x-2">
-            <input
-              type="text"
-              placeholder="Search by username..."
-              value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="px-4 py-2 rounded border border-gray-300"
-            />
-            <select
-              value={sortField}
-              onChange={(e) => setSortField(e.target.value as "username" | "points")}
-              className="px-4 py-2 rounded border border-gray-300"
-            >
-              <option value="username">Sort by Username</option>
-              <option value="points">Sort by Points</option>
-            </select>
-            <button
-              className="px-4 py-2 border rounded"
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-            >
-              {sortOrder === "asc" ? "⬆️ Asc" : "⬇️ Desc"}
-            </button>
-          </div>
+  return (
+    <section className="min-h-screen bg-gray-50 py-16 px-6">
+      <h2 className="text-3xl font-extrabold text-green-700 text-center mb-8">
+        Nearby Recycling Centres ♻️
+      </h2>
 
-          <button
-            onClick={() => { setNewUserRole(title === "Admins" ? "admin" : "user"); setShowModal(true); }}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-          >
-            {title === "Admins" ? "+ Add Admin" : "+ Add User"}
-          </button>
-        </div>
+      <p className="text-center text-gray-600 mb-6">{locationStatus}</p>
 
-        <table className="min-w-full border border-gray-200">
-          <thead className="bg-green-100">
-            <tr>
-              <th className="border px-4 py-2">ID</th>
-              <th className="border px-4 py-2">Username</th>
-              <th className="border px-4 py-2">Email</th>
-              <th className="border px-4 py-2">Phone</th>
-              <th className="border px-4 py-2">Address</th>
-              <th className="border px-4 py-2">DOB</th>
-              <th className="border px-4 py-2">Created</th>
-              {title === "Users" && <th className="border px-4 py-2">Points</th>}
-              <th className="border px-4 py-2">Actions</th>
+      <div className="bg-white p-6 rounded-2xl shadow-lg max-w-4xl mx-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-green-100 text-green-700 text-left">
+              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Address</th>
+              <th className="py-3 px-4">Distance (m)</th>
             </tr>
           </thead>
           <tbody>
-            {currentData.length > 0 ? (
-              currentData.map(user => (
-                <tr key={user.id} className="text-center hover:bg-gray-50">
-                  <td className="border px-4 py-2">{user.id}</td>
-                  <td className="border px-4 py-2">{user.username}</td>
-                  <td className="border px-4 py-2">{user.email}</td>
-                  <td className="border px-4 py-2">{user.phone_number}</td>
-                  <td className="border px-4 py-2">{user.address}</td>
-                  <td className="border px-4 py-2">{user.date_of_birth}</td>
-                  <td className="border px-4 py-2">{user.created_date}</td>
-                  {title === "Users" && <td className="border px-4 py-2">{user.points}</td>}
-                  <td className="border px-4 py-2 space-x-2">
-                    <button className="px-2 py-1 bg-blue-500 text-white rounded">Edit</button>
-                    <button onClick={() => handleDelete(user.id)} className="px-2 py-1 bg-red-500 text-white rounded">Delete</button>
-                    {user.role === "user" && (
-                      <>
-                        <button className="px-2 py-1 bg-yellow-500 text-white rounded">Update Password</button>
-                        {showUpload && (
-                          <button className="px-2 py-1 bg-purple-500 text-white rounded">Upload</button>
-                        )}
-                      </>
-                    )}
-                  </td>
+            {centres.length > 0 ? (
+              centres.map((centre, idx) => (
+                <tr
+                  key={centre.id}
+                  className={`border-b ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
+                >
+                  <td className="py-3 px-4 font-semibold">{centre.name}</td>
+                  <td className="py-3 px-4">{centre.address}</td>
+                  <td className="py-3 px-4">{centre.distance}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={title === "Users" ? 9 : 8} className="text-center py-4 text-gray-500 italic">
-                  No {title.toLowerCase()} found.
+                <td colSpan={3} className="py-4 text-center text-gray-500">
+                  No centres found
                 </td>
               </tr>
             )}
           </tbody>
         </table>
-
-        <div className="flex justify-between items-center mt-6">
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setPage(currentPage - 1)}
-            className={`px-4 py-2 rounded-lg ${currentPage === 1 ? "bg-gray-300" : "bg-green-600 text-white hover:bg-green-700"}`}
-          >
-            Prev
-          </button>
-          <p className="text-gray-600">Page {currentPage} of {totalPages}</p>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setPage(currentPage + 1)}
-            className={`px-4 py-2 rounded-lg ${currentPage === totalPages ? "bg-gray-300" : "bg-green-600 text-white hover:bg-green-700"}`}
-          >
-            Next
-          </button>
-        </div>
       </div>
-    );
-  };
-
-  const chartData = [
-    { name: "Admins", value: users.filter(u => u.role === "admin").length },
-    { name: "Users", value: users.filter(u => u.role === "user").length },
-  ];
-
-  const totalAdminPages = Math.ceil(admins.length / itemsPerPage) || 1;
-  const totalUserPages = Math.ceil(normalUsers.length / itemsPerPage) || 1;
-
-  return (
-    <section className="min-h-screen bg-gray-50 py-16 px-6">
-      <div className="p-6 bg-white rounded-2xl shadow-md mb-8">
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={chartData}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              label
-            >
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-            <Legend verticalAlign="bottom" />
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-
-      {renderTable(
-        "Admins", admins, adminPage, setAdminPage, totalAdminPages,
-        searchAdmin, setSearchAdmin, sortFieldAdmin, setSortFieldAdmin, sortOrderAdmin, setSortOrderAdmin, false
-      )}
-      {renderTable(
-        "Users", normalUsers, userPage, setUserPage, totalUserPages,
-        searchUser, setSearchUser, sortFieldUser, setSortFieldUser, sortOrderUser, setSortOrderUser, true
-      )}
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-1/3">
-            <h3 className="text-lg font-semibold mb-4">Add New {newUserRole === "admin" ? "Admin" : "User"}</h3>
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                placeholder="Username"
-                value={newUserData.username || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, username: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.username && <p className="text-red-500 text-sm">{formErrors.username}</p>}
-
-              <input
-                type="email"
-                placeholder="Email"
-                value={newUserData.email || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
-
-              <input
-                type="password"
-                placeholder="Password"
-                value={newUserData.password || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
-
-              <input
-                type="text"
-                placeholder="Phone Number"
-                value={newUserData.phone_number || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, phone_number: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.phone_number && <p className="text-red-500 text-sm">{formErrors.phone_number}</p>}
-
-              <input
-                type="text"
-                placeholder="Address"
-                value={newUserData.address || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, address: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.address && <p className="text-red-500 text-sm">{formErrors.address}</p>}
-
-              <input
-                type="date"
-                value={newUserData.date_of_birth || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, date_of_birth: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
-              {formErrors.date_of_birth && <p className="text-red-500 text-sm">{formErrors.date_of_birth}</p>}
-            </div>
-
-            <div className="flex justify-end mt-4 gap-2">
-              <button
-                onClick={() => { setShowModal(false); setNewUserData({}); setFormErrors({}); }}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddUser}
-                className="px-4 py-2 bg-green-600 text-white rounded"
-              >
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </section>
   );
-} 
+}

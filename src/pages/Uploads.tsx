@@ -2,14 +2,47 @@ import { useState, useRef } from "react";
 
 export default function Uploads() {
   const [files, setFiles] = useState([
-    { id: 1, filename: "plastic_report.pdf", uploadedBy: "Rushwitha", date: "2025-09-01" },
-    { id: 2, filename: "paper_summary.xlsx", uploadedBy: "Aarav", date: "2025-09-02" },
-    { id: 3, filename: "metal_data.csv", uploadedBy: "Sneha", date: "2025-09-03" },
+    {
+      id: 1,
+      filename: "plastic_report.pdf",
+      uploadedBy: "Rushwitha",
+      email: "rushwitha@example.com",
+      date: "2025-09-01",
+      path: "/uploads/plastic_report.pdf",
+      ecoPoints: 25,
+      lastUpdated: "2025-09-05",
+      image: "https://via.placeholder.com/150/4ade80/ffffff?text=Plastic",
+    },
+    {
+      id: 2,
+      filename: "paper_summary.xlsx",
+      uploadedBy: "Aarav",
+      email: "aarav@example.com",
+      date: "2025-09-02",
+      path: "/uploads/paper_summary.xlsx",
+      ecoPoints: 15,
+      lastUpdated: "2025-09-06",
+      image: "https://via.placeholder.com/150/60a5fa/ffffff?text=Paper",
+    },
+    {
+      id: 3,
+      filename: "metal_data.csv",
+      uploadedBy: "Sneha",
+      email: "sneha@example.com",
+      date: "2025-09-03",
+      path: "/uploads/metal_data.csv",
+      ecoPoints: 30,
+      lastUpdated: "2025-09-07",
+      image: "https://via.placeholder.com/150/f87171/ffffff?text=Metal",
+    },
   ]);
 
   const [search, setSearch] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [currentFileId, setCurrentFileId] = useState<number | null>(null);
+
+  // For modal
+  const [selectedFile, setSelectedFile] = useState<any | null>(null);
 
   const handleDelete = (id: number) => {
     setFiles(files.filter((file) => file.id !== id));
@@ -18,7 +51,7 @@ export default function Uploads() {
   const handleReuploadClick = (id: number) => {
     setCurrentFileId(id);
     if (fileInputRef.current) {
-      fileInputRef.current.click(); // trigger hidden input
+      fileInputRef.current.click();
     }
   };
 
@@ -29,21 +62,26 @@ export default function Uploads() {
     setFiles(
       files.map((file) =>
         file.id === currentFileId
-          ? { ...file, filename: newFile.name, date: new Date().toISOString().split("T")[0] }
+          ? {
+              ...file,
+              filename: newFile.name,
+              date: new Date().toISOString().split("T")[0],
+              lastUpdated: new Date().toISOString().split("T")[0],
+            }
           : file
       )
     );
 
-    e.target.value = ""; // reset input
+    e.target.value = "";
     setCurrentFileId(null);
   };
 
-  // ✅ NEW: handle view
-  const handleView = (file: { id: number; filename: string; uploadedBy: string; date: string }) => {
-    alert(`📄 File: ${file.filename}\n👤 Uploaded By: ${file.uploadedBy}\n📅 Date: ${file.date}`);
-    // Later if you have file URLs:
-    // window.open(file.url, "_blank");
+  // ✅ View opens modal
+  const handleView = (file: any) => {
+    setSelectedFile(file);
   };
+
+  const closeModal = () => setSelectedFile(null);
 
   // Filter files by "uploadedBy"
   const filteredFiles = files.filter((file) =>
@@ -91,7 +129,7 @@ export default function Uploads() {
                   <td className="py-3 px-4">{file.date}</td>
                   <td className="py-3 px-4 space-x-2">
                     <button
-                      onClick={() => handleView(file)} // ✅ FIXED
+                      onClick={() => handleView(file)}
                       className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
                     >
                       View
@@ -129,6 +167,50 @@ export default function Uploads() {
           onChange={handleFileChange}
         />
       </div>
+
+      {/* ✅ Modal */}
+      {selectedFile && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white rounded-2xl shadow-lg p-6 max-w-lg w-full relative">
+            <button
+              onClick={closeModal}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg"
+            >
+              ✖
+            </button>
+
+            <h3 className="text-2xl font-bold text-green-700 mb-4">
+              File Details
+            </h3>
+
+            <img
+              src={selectedFile.image}
+              alt={selectedFile.filename}
+              className="w-40 h-40 object-cover rounded-lg mb-4 mx-auto"
+            />
+
+            <div className="space-y-2 text-gray-700">
+              <p><span className="font-semibold">📄 File Name:</span> {selectedFile.filename}</p>
+              <p><span className="font-semibold">👤 Uploaded By:</span> {selectedFile.uploadedBy}</p>
+              <p><span className="font-semibold">📧 Email:</span> {selectedFile.email}</p>
+              <p><span className="font-semibold">📅 Uploaded Date:</span> {selectedFile.date}</p>
+              <p>
+                <span className="font-semibold">🛤️ Path:</span>{" "}
+                <a
+                  href={selectedFile.path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {selectedFile.path}
+                </a>
+              </p>
+              <p><span className="font-semibold">🌱 EcoPoints:</span> {selectedFile.ecoPoints}</p>
+              <p><span className="font-semibold">🕒 Last Updated:</span> {selectedFile.lastUpdated}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
