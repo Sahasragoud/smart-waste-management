@@ -2,7 +2,7 @@ package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.dto.UploadRequest;
 import com.smart_waste_management.backend.dto.UploadResponse;
-import com.smart_waste_management.backend.entity.Uploads;
+import com.smart_waste_management.backend.exception.UploadNotFoundException;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.UploadService;
 import org.springframework.core.io.UrlResource;
@@ -64,8 +64,8 @@ public class UploadsController {
 
 
     @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @GetMapping("/{userId}")
-    public Page<Uploads> getAllByUserId(
+    @GetMapping("user/{userId}")
+    public Page<UploadResponse> getAllByUserId(
             @PathVariable Long userId,
             @RequestParam int page,
             @RequestParam int size,
@@ -77,11 +77,12 @@ public class UploadsController {
         return uploadService.getUploadsByUserId(userId,PageRequest.of(page,size,sortBy));
     }
 
-    @GetMapping("/{id}/image")
-    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable Long id) throws IOException {
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("upload/{id}/image")
+    public ResponseEntity<org.springframework.core.io.Resource> getImage(@PathVariable Long id) throws IOException, UploadNotFoundException {
         // Fetch upload entity
-        Uploads upload = uploadService.getUploadById(id)
-                .orElseThrow(() -> new RuntimeException("Upload not found with id: " + id));
+        UploadResponse upload = uploadService.getUploadById(id);
 
         // Build path from DB
         Path path = Paths.get(upload.getFilePath());
@@ -98,4 +99,18 @@ public class UploadsController {
                 .contentType(mediaType)
                 .body(resource);
     }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @GetMapping("/upload/{uploadId}")
+    public UploadResponse getUploadById(@PathVariable Long uploadId) throws UploadNotFoundException {
+        return uploadService.getUploadById(uploadId);
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @DeleteMapping("/upload/{id}")
+    public void deleteUpload(@PathVariable Long id) throws UploadNotFoundException {
+        uploadService.deleteUpload(id);
+    }
+
+
 }

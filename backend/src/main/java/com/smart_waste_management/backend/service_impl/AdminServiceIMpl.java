@@ -60,10 +60,5 @@ public class AdminServiceIMpl implements AdminService {
         return uploadsRepository.findAll(pageable);
     }
 
-    @Override
-    public void deleteUpload(Long id) {
-        uploadsRepository.deleteById(id);
-    }
-
 
 }

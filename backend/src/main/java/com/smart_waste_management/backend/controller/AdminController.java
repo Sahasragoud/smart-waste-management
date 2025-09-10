@@ -65,10 +65,4 @@ public class AdminController {
         return adminService.getAllUploads(PageRequest.of(page,size,sortBy));
     }
 
-    @PreAuthorize("hasAnyRole('USER','ADMIN')")
-    @DeleteMapping("/upload/{id}")
-    public void deleteUpload(@PathVariable Long id){
-        adminService.deleteUpload(id);
-    }
-
 }

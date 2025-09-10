@@ -112,9 +112,22 @@ public class UploadsServiceImpl implements UploadService {
 
 
     @Override
-    public Optional<Uploads> getUploadById(Long id) {
-        return uploadsRepository.findById(id);
+    public UploadResponse getUploadById(Long id) throws UploadNotFoundException {
+        Uploads upload = uploadsRepository.findById(id)
+                .orElseThrow(() -> new UploadNotFoundException("Upload not found with id: " + id));
+
+        return new UploadResponse(
+                upload.getFileName(),
+                upload.getFileType(),
+                upload.getFileSize(),
+                upload.getFilePath(),
+                upload.getUser().getId(),
+                upload.getCategory(),
+                upload.getConfidence(),
+                null // guidance can be set later
+        );
     }
+
 
     @Override
     public ResponseEntity<Resource> getImage(Long id) throws UploadNotFoundException, MalformedURLException {
@@ -133,5 +146,14 @@ public class UploadsServiceImpl implements UploadService {
                 .contentType(mediaType)
                 .body(resource);
 
+    }
+
+
+    @Override
+    public void deleteUpload(Long id) throws UploadNotFoundException {
+        Uploads upload = uploadsRepository.findById(id).orElseThrow(
+                () -> new UploadNotFoundException("Upload is not available")
+        );
+        uploadsRepository.deleteById(id);
     }
 }
