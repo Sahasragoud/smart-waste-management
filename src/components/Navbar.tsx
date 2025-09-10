@@ -75,10 +75,7 @@ export default function Navbar() {
     links.push({ to: "/admin/users", label: "Users" });
     links.push({ to: "/admin/uploads", label: "Uploads" });
     links.push({ to: "/admin/rewards", label: "Rewards" });
-    <Link to="/leaderboard" className="hover:text-green-600">
-  Leaderboard
-</Link>
-
+    links.push({ to: "/leaderboard", label: "Leaderboard" }); // ✅ Fixed
   } else {
     links.push({ to: "/dashboard", label: "Dashboard" });
     links.push({ to: "/scan", label: "Scans" });
@@ -96,6 +93,7 @@ export default function Navbar() {
           🌱 EcoSort
         </Link>
 
+        {/* Desktop Menu */}
         <div className="hidden md:flex space-x-4 font-medium items-center">
           {links.map((link) => (
             <Link
@@ -113,6 +111,7 @@ export default function Navbar() {
 
           {isLoggedIn && (
             <div className="flex items-center space-x-6 relative" ref={profileRef}>
+              {/* Notifications */}
               <div className="relative">
                 <FaBell className="text-2xl cursor-pointer hover:text-green-500 dark:hover:text-green-300 transition" />
                 {points > 0 && (
@@ -122,6 +121,7 @@ export default function Navbar() {
                 )}
               </div>
 
+              {/* Dark Mode Toggle */}
               <button
                 onClick={() => {
                   setDarkMode(!darkMode);
@@ -132,6 +132,7 @@ export default function Navbar() {
                 {darkMode ? <FaSun /> : <FaMoon />}
               </button>
 
+              {/* Profile Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
@@ -176,6 +177,7 @@ export default function Navbar() {
           )}
         </div>
 
+        {/* Mobile Menu Button */}
         <button
           className="md:hidden text-3xl p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition"
           onClick={() => setIsOpen(!isOpen)}
@@ -184,6 +186,7 @@ export default function Navbar() {
         </button>
       </div>
 
+      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
