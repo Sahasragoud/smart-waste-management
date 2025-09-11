@@ -18,11 +18,30 @@ export default function Scan() {
     Hazardous: 15,
   };
 
+  const sampleCategories = [
+    "Plastic",
+    "Organic",
+    "E-Waste",
+    "Hazardous",
+    "Ceramic Products",
+    "Diapers",
+    "Plastic Bag Wraps",
+    "Sanitary Napkins",
+    "Coffee Tea Bags",
+    "Egg-shells",
+    "Food Scraps",
+    "Kitchen Waste",
+    "Yard Trimmings",
+    "Cans (All Types)",
+    "Glass Containers",
+    "Paper Products",
+    "Plastic Bottles",
+  ];
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     if (selectedFile) {
       setUploading(true);
-      // Simulate upload delay
       setTimeout(() => {
         setFile(selectedFile);
         setUploaded(true);
@@ -43,33 +62,22 @@ export default function Scan() {
   const handleAnalyze = () => {
     if (!file) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     setAnalyzing(true);
     setCategory(null);
 
-    fetch("/api/analyze", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setAnalyzing(false);
-        const detectedCategory = data.category || "Unknown Category";
-        setCategory(detectedCategory);
+    // Simulate analysis delay and random category selection
+    setTimeout(() => {
+      const randomCategory =
+        sampleCategories[Math.floor(Math.random() * sampleCategories.length)];
+      setCategory(randomCategory);
 
-        if (pointsMap[detectedCategory]) {
-          setPoints((prev) => prev + pointsMap[detectedCategory]);
-        }
+      if (pointsMap[randomCategory]) {
+        setPoints((prev) => prev + pointsMap[randomCategory]);
+      }
 
-        setShowInfoPopup(true);
-      })
-      .catch((error) => {
-        setAnalyzing(false);
-        console.error("Error analyzing file:", error);
-        alert("Something went wrong. Please try again.");
-      });
+      setAnalyzing(false);
+      setShowInfoPopup(true);
+    }, 2000);
   };
 
   return (
