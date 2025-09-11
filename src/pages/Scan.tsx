@@ -67,84 +67,78 @@ export default function Scan() {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-green-100 px-6">
-      <div className="bg-white rounded-2xl shadow-lg p-6 flex flex-col md:flex-row gap-6">
+      <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md text-center">
 
-        {/* Compact Scan Section */}
-        <div className="w-full md:w-80 text-center">
-          <h2 className="text-2xl font-bold text-green-700 mb-4">
-            Scan Waste
-          </h2>
+        <h2 className="text-3xl font-bold text-green-700 mb-4">
+          Scan & Classify Waste
+        </h2>
 
-          {!uploaded && (
-            <label className="block cursor-pointer">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-4 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
-                <Upload className="text-green-600 w-8 h-8 mb-2" />
-                <span className="text-green-700 text-sm">
-                  {uploading ? "Uploading..." : "Click to choose file or drag & drop"}
-                </span>
-              </div>
-              <input
-                type="file"
-                className="hidden"
-                accept="image/*"
-                onChange={handleFileUpload}
-                disabled={uploading}
-              />
-            </label>
-          )}
+        <p className="text-gray-600 mb-6">
+          Upload an image of your waste item, and our system will analyze it to determine the correct category for recycling.
+        </p>
 
-          {file && (
-            <img
-              src={URL.createObjectURL(file)}
-              alt="Preview"
-              className="w-32 h-32 object-contain mx-auto rounded-md shadow-md mb-4"
-            />
-          )}
+        {/* File Upload */}
+        <label className="block cursor-pointer">
+          <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
+            <Upload className="text-green-600 w-10 h-10 mb-2" />
+            <span className="text-green-700 font-medium">
+              {uploading ? "Uploading..." : "Click to choose file or drag & drop"}
+            </span>
+          </div>
+          <input
+            type="file"
+            className="hidden"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={uploading}
+          />
+        </label>
 
-          {file && (
-            <p className="text-sm text-gray-500 mb-4 truncate">
-              Selected: <span className="font-medium">{file.name}</span>
-            </p>
-          )}
+        {file && (
+          <img
+            src={URL.createObjectURL(file)}
+            alt="Preview"
+            className="w-36 h-36 object-contain mx-auto rounded-md shadow-md mb-4"
+          />
+        )}
 
-          {uploaded && (
-            <div className="flex flex-col gap-2 mb-4">
-              <button
-                className="px-4 py-2 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 transition"
-                onClick={handleReUpload}
-                disabled={uploading}
-              >
-                Re-upload
-              </button>
+        {file && (
+          <p className="text-sm text-gray-500 mb-4 truncate">
+            Selected: <span className="font-medium">{file.name}</span>
+          </p>
+        )}
 
-              <button
-                className="px-4 py-2 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 transition"
-                onClick={handleAnalyze}
-                disabled={analyzing}
-              >
-                {analyzing ? "Analyzing..." : "Analyze"}
-              </button>
-            </div>
-          )}
-
-          {uploaded && !analyzing && !category && (
-            <p className="text-green-700 font-medium">Uploaded successfully!</p>
-          )}
-        </div>
-
-        {/* Responsive Analysis Result Popup Section */}
-        {showPopup && category && (
-          <div className="w-full md:w-80 p-4 border rounded-xl bg-green-100 relative">
+        {uploaded && (
+          <div className="flex justify-center gap-4 mb-4">
             <button
-              className="absolute top-2 right-2 text-green-600 hover:text-green-800"
-              onClick={() => setShowPopup(false)}
+              className="px-5 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+              onClick={handleReUpload}
+              disabled={uploading}
             >
-              <X size={20} />
+              Re-upload
             </button>
 
-            <h3 className="text-lg font-semibold text-green-800 mb-2">
-              Detected Category:
+            <button
+              className="px-5 py-2 bg-green-600 text-white font-semibold rounded-lg shadow hover:bg-green-700 transition"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+            >
+              {analyzing ? "Analyzing..." : "Analyze"}
+            </button>
+          </div>
+        )}
+
+        {uploaded && !analyzing && !category && (
+          <p className="text-green-700 font-medium">Uploaded successfully!</p>
+        )}
+
+        {/* Result Info Box */}
+        {showPopup && category && (
+          <div className="mt-6 p-4 border rounded-xl bg-green-100 text-left relative shadow">
+            <h3 className="text-xl font-semibold text-green-800 mb-2">
+              Waste Category:
             </h3>
+
             <p className="text-green-900 font-bold mb-4">{category}</p>
 
             <p className="italic text-gray-700 mb-4 text-sm">
@@ -155,9 +149,18 @@ export default function Scan() {
               Uploaded on: <span className="font-medium">{uploadDate}</span>
             </p>
 
-            <button className="flex items-center justify-center px-3 py-1 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 text-sm">
-              For Guidance <ArrowRight className="ml-2" size={16} />
-            </button>
+            <div className="flex justify-between items-center gap-3">
+              <button className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 text-sm">
+                For Guidance <ArrowRight className="ml-2" size={16} />
+              </button>
+
+              <button
+                className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 text-sm"
+                onClick={() => setShowPopup(false)}
+              >
+                Close <X className="ml-2" size={16} />
+              </button>
+            </div>
           </div>
         )}
       </div>
