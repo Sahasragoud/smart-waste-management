@@ -48,6 +48,7 @@ export default function Scan() {
         setUploading(false);
         setUploaded(true);
         setCategory(null);
+        setShowPopup(false);
       }, 1500);
     }
   };
@@ -66,7 +67,6 @@ export default function Scan() {
     formData.append("file", file);
 
     setAnalyzing(true);
-    setCategory(null);
 
     fetch("/api/analyze", {
       method: "POST",
@@ -93,10 +93,10 @@ export default function Scan() {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-green-100 px-6">
-      <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-5xl flex gap-8">
+      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-3xl flex gap-6">
         {/* Scan & Upload Section */}
-        <div className="flex-1 p-6 border rounded-xl bg-green-50">
-          <h2 className="text-2xl font-bold text-green-700 mb-4">
+        <div className="flex-1 text-center">
+          <h2 className="text-3xl font-bold text-green-700 mb-4">
             Scan & Classify Waste
           </h2>
           <p className="text-gray-600 mb-6">
@@ -105,7 +105,7 @@ export default function Scan() {
 
           {!uploaded && (
             <label className="block cursor-pointer">
-              <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-100 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
+              <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
                 <Upload className="text-green-600 w-10 h-10 mb-2" />
                 <span className="text-green-700 font-medium">
                   {uploading ? "Uploading..." : "Click to choose file or drag & drop"}
@@ -156,11 +156,11 @@ export default function Scan() {
           )}
 
           {uploaded && !analyzing && !category && (
-            <p className="text-green-700 font-medium mb-4">Uploaded successfully!</p>
+            <p className="text-green-700 font-medium">Uploaded successfully!</p>
           )}
         </div>
 
-        {/* Popup Analysis Result Section */}
+        {/* Analysis Result Popup Section */}
         {showPopup && category && (
           <div className="flex-1 p-6 border rounded-xl bg-green-100 relative">
             <button
@@ -191,3 +191,5 @@ export default function Scan() {
     </section>
   );
 }
+
+
