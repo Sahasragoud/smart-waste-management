@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -67,14 +68,18 @@ public class UploadsServiceImpl implements UploadService {
 
         //  Prepare UploadResponse with guidance
         return new UploadResponse(
+                upload.getId(),
                 upload.getFileName(),
                 upload.getFileType(),
                 upload.getFileSize(),
                 upload.getFilePath(),
                 user.getId(),
+                user.getUsername(),
+                user.getEmail(),
                 category,
                 confidence,
-                getGuidance(category)
+                getGuidance(category),
+                upload.getCreatedAt().toString()
         );
     }
 
@@ -99,14 +104,18 @@ public class UploadsServiceImpl implements UploadService {
 
         // 3️⃣ Map Uploads entity to UploadResponse DTO
         return uploadsPage.map(upload -> new UploadResponse(
+                upload.getId(),
                 upload.getFileName(),
                 upload.getFileType(),
                 upload.getFileSize(),
                 upload.getFilePath(),
                 userId,
+                user.getUsername(),
+                user.getEmail(),
                 upload.getCategory(),       // can be null initially
                 upload.getConfidence(),     // can be null initially
-                null                        // guidance, can be set later
+                null,
+                upload.getCreatedAt().toString()
         ));
     }
 
@@ -117,14 +126,18 @@ public class UploadsServiceImpl implements UploadService {
                 .orElseThrow(() -> new UploadNotFoundException("Upload not found with id: " + id));
 
         return new UploadResponse(
+                upload.getId(),
                 upload.getFileName(),
                 upload.getFileType(),
                 upload.getFileSize(),
                 upload.getFilePath(),
                 upload.getUser().getId(),
+                upload.getUser().getUsername(),
+                upload.getUser().getEmail(),
                 upload.getCategory(),
                 upload.getConfidence(),
-                null // guidance can be set later
+                null, // guidance can be set later
+                upload.getCreatedAt().toString()
         );
     }
 

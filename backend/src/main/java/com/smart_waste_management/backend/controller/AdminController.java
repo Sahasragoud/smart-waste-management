@@ -2,8 +2,10 @@ package com.smart_waste_management.backend.controller;
 
 import com.smart_waste_management.backend.dto.AuthResponse;
 import com.smart_waste_management.backend.dto.RegisterRequest;
+import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.entity.User;
+import com.smart_waste_management.backend.enums.Role;
 import com.smart_waste_management.backend.exception.UserNotFoundException;
 import com.smart_waste_management.backend.service.AdminService;
 import org.springframework.data.domain.Page;
@@ -34,16 +36,24 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/users")
-    public Page<User> getAllUsers(
+    @GetMapping("/users/by-role")
+    public Page<User> getUsersByRole(
+            @RequestParam String role,
             @RequestParam int page,
             @RequestParam int size,
             @RequestParam String sortField,
             @RequestParam String sortDirection
     ){
+        Role userRole;
+        try {
+            userRole = Role.valueOf(role.toUpperCase()); // convert string -> enum
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid role: " + role);
+        }
+
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Sort sortBy = Sort.by(direction,sortField);
-        return adminService.getAllUsers(PageRequest.of(page,size,sortBy));
+        Sort sortBy = Sort.by(direction, sortField);
+        return adminService.getUsersByRole(userRole, PageRequest.of(page, size, sortBy));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -52,9 +62,9 @@ public class AdminController {
         adminService.deleteUser(userId);
     }
 
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/uploads")
-    public Page<Uploads> getAllUploads(
+    public Page<UploadResponse> getAllUploads(
             @RequestParam int page,
             @RequestParam int size,
             @RequestParam String sortField,
@@ -62,7 +72,8 @@ public class AdminController {
     ){
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
         Sort sortBy = Sort.by(direction, sortField);
-        return adminService.getAllUploads(PageRequest.of(page,size,sortBy));
+        return adminService.getAllUploads(PageRequest.of(page, size, sortBy));
     }
-
 }
+
+

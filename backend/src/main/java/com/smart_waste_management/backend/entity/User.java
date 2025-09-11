@@ -51,6 +51,7 @@ public class User {
 
     private Long points = 0L;
 
+    @Enumerated(EnumType.STRING)
     private Role role;
 
 

@@ -1,6 +1,7 @@
 package com.smart_waste_management.backend.service_impl;
 
 import com.smart_waste_management.backend.dto.RegisterRequest;
+import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
 import com.smart_waste_management.backend.entity.User;
 import com.smart_waste_management.backend.enums.Role;
@@ -29,9 +30,10 @@ public class AdminServiceIMpl implements AdminService {
     }
 
     @Override
-    public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+    public Page<User> getUsersByRole(Role role, Pageable pageable) {
+        return userRepository.findByRole(role, pageable);
     }
+
 
     @Override
     public void deleteUser(Long userId) throws UserNotFoundException {
@@ -56,8 +58,23 @@ public class AdminServiceIMpl implements AdminService {
     }
 
     @Override
-    public Page<Uploads> getAllUploads(Pageable pageable) {
-        return uploadsRepository.findAll(pageable);
+    public Page<UploadResponse> getAllUploads(Pageable pageable) {
+        Page<Uploads> uploads = uploadsRepository.findAll(pageable);
+
+        return uploads.map((upload) -> new UploadResponse(
+                upload.getId(),
+                upload.getFileName(),
+                upload.getFileType(),
+                upload.getFileSize(),
+                upload.getFilePath(),
+                upload.getUser().getId(),
+                upload.getUser().getUsername(),
+                upload.getUser().getEmail(),
+                upload.getCategory(),       // can be null initially
+                upload.getConfidence(),     // can be null initially
+                null,
+                upload.getCreatedAt().toString()
+        ));
     }
 
 
