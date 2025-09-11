@@ -5,9 +5,10 @@ export default function Scan() {
   const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(0);
-  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploaded, setUploaded] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
 
-  // Points mapping per waste category
   const pointsMap: { [key: string]: number } = {
     Plastic: 10,
     Organic: 5,
@@ -15,16 +16,33 @@ export default function Scan() {
     Hazardous: 15,
   };
 
-  const handleAnalyze = () => {
-    if (!file) {
-      alert("Please select a file first!");
-      return;
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0] || null;
+    if (selectedFile) {
+      setUploading(true);
+      // Simulate upload delay
+      setTimeout(() => {
+        setFile(selectedFile);
+        setUploading(false);
+        setUploaded(true);
+        setCategory(null); // Reset previous category
+      }, 1500);
     }
+  };
+
+  const handleReUpload = () => {
+    setFile(null);
+    setUploaded(false);
+    setCategory(null);
+  };
+
+  const handleAnalyze = () => {
+    if (!file) return;
 
     const formData = new FormData();
     formData.append("file", file);
 
-    setLoading(true);
+    setAnalyzing(true);
     setCategory(null);
 
     fetch("/api/analyze", {
@@ -33,18 +51,17 @@ export default function Scan() {
     })
       .then((res) => res.json())
       .then((data) => {
-        setLoading(false);
+        setAnalyzing(false);
         const detectedCategory = data.category || "Unknown Category";
         setCategory(detectedCategory);
 
-        // Award points
         if (pointsMap[detectedCategory]) {
           setPoints((prev) => prev + pointsMap[detectedCategory]);
         }
       })
       .catch((error) => {
-        setLoading(false);
-        console.error("Error uploading file:", error);
+        setAnalyzing(false);
+        console.error("Error analyzing file:", error);
         alert("Something went wrong. Please try again.");
       });
   };
@@ -61,20 +78,23 @@ export default function Scan() {
         </p>
 
         {/* File Upload */}
-        <label className="block cursor-pointer">
-          <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
-            <Upload className="text-green-600 w-10 h-10 mb-2" />
-            <span className="text-green-700 font-medium">
-              Click to choose file or drag & drop
-            </span>
-          </div>
-          <input
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-          />
-        </label>
+        {!uploaded && (
+          <label className="block cursor-pointer">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
+              <Upload className="text-green-600 w-10 h-10 mb-2" />
+              <span className="text-green-700 font-medium">
+                {uploading ? "Uploading..." : "Click to choose file or drag & drop"}
+              </span>
+            </div>
+            <input
+              type="file"
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={uploading}
+            />
+          </label>
+        )}
 
         {/* Image Preview */}
         {file && (
@@ -92,17 +112,34 @@ export default function Scan() {
           </p>
         )}
 
-        {/* Analyze Button */}
-        <button
-          className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition"
-          onClick={handleAnalyze}
-          disabled={!file || loading}
-        >
-          {loading ? "Analyzing..." : "Upload & Analyze"}
-        </button>
+        {/* Buttons after file is uploaded */}
+        {uploaded && (
+          <div className="flex justify-center gap-4 mb-4">
+            <button
+              className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl shadow-md hover:bg-yellow-600 active:scale-95 transition"
+              onClick={handleReUpload}
+              disabled={uploading}
+            >
+              Re-upload
+            </button>
+
+            <button
+              className="px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition"
+              onClick={handleAnalyze}
+              disabled={analyzing}
+            >
+              {analyzing ? "Analyzing..." : "Analyze"}
+            </button>
+          </div>
+        )}
+
+        {/* Upload Success Message */}
+        {uploaded && !analyzing && !category && (
+          <p className="text-green-700 font-medium mb-4">Uploaded successfully!</p>
+        )}
 
         {/* Display Category & Points */}
-        {category && !loading && (
+        {category && (
           <div className="mt-4">
             <p className="text-xl font-semibold text-green-700">
               Waste Category:{" "}
@@ -113,11 +150,6 @@ export default function Scan() {
             </p>
           </div>
         )}
-
-        {/* Total Points */}
-        <p className="mt-4 text-md font-semibold text-green-700">
-          Total Points: {points}
-        </p>
       </div>
     </section>
   );
