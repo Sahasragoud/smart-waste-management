@@ -70,11 +70,17 @@ const fetchUsers = async () => {
     const storedAdmin = localStorage.getItem("user");
     if (storedAdmin) {
       setAdmin(JSON.parse(storedAdmin));
-      console.log(admin?.name)
     } else {
       setAdmin({ name: "Admin" }); // fallback
     }
   }, []);
+
+    useEffect(() => {
+    if (admin) {
+      console.log("Admin:", admin.name);
+    }
+  }, [admin]);
+
 
   useEffect(() => {
     fetchUsers();
@@ -194,7 +200,7 @@ function renderTable(
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
-            setPage(1);
+            setPage(0);
           }}
           className="px-4 py-2 rounded border border-gray-300"
         />
@@ -305,8 +311,8 @@ function renderTable(
 
 
 const chartData = [
-  { name: "Admins", value: admins.filter(u => u.role === "ADMIN").length },
-  { name: "Users", value: users.filter(u => u.role === "USER").length },
+  { name: "Admins", value: admins.length },
+  { name: "Users", value: users.length },
 ];
 
   return (

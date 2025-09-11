@@ -10,3 +10,5 @@ export const resetPassword = (token :string, newPassword: string) => API.post<st
 export const updatePassword = (userId: number,updateFields : UpdatePassword)=> API.put(`users/${userId}/updatePassword`,updateFields);
 export const updateProfile = (userId : number, updateFields : Partial<UpdateProfile>) => API.put(`users/${userId}/updateProfile`, updateFields);
 export const getUser = (userId : number) => API.get<User>(`users/by-id?id=${userId}`);
+
+export const createUpload = (userId : number) => API.post(`uploads/user/${userId}`)
