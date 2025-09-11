@@ -8,7 +8,7 @@ export const getUsersByRole = (
     size : number,
     sortField : string,
     sortDirection :string
-) => API.get(`admin/users/by-role=${role}?page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`);
+) => API.get(`admin/users/by-role?role=${role}&page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`);
 
 export const deleteUser = (userId : number) => API.delete(`admin/user/${userId}`);
 
