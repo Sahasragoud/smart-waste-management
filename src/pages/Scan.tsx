@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Upload } from "lucide-react";
+import { Upload, ArrowRight } from "lucide-react";
 
 export default function Scan() {
   const [file, setFile] = useState<File | null>(null);
@@ -8,6 +8,8 @@ export default function Scan() {
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [showInfoPopup, setShowInfoPopup] = useState(false);
+  const [uploadedDate, setUploadedDate] = useState<string>("");
 
   const pointsMap: { [key: string]: number } = {
     Plastic: 10,
@@ -23,9 +25,10 @@ export default function Scan() {
       // Simulate upload delay
       setTimeout(() => {
         setFile(selectedFile);
-        setUploading(false);
         setUploaded(true);
-        setCategory(null); // Reset previous category
+        setUploading(false);
+        setCategory(null);
+        setUploadedDate(new Date().toLocaleString());
       }, 1500);
     }
   };
@@ -34,6 +37,7 @@ export default function Scan() {
     setFile(null);
     setUploaded(false);
     setCategory(null);
+    setShowInfoPopup(false);
   };
 
   const handleAnalyze = () => {
@@ -58,6 +62,8 @@ export default function Scan() {
         if (pointsMap[detectedCategory]) {
           setPoints((prev) => prev + pointsMap[detectedCategory]);
         }
+
+        setShowInfoPopup(true);
       })
       .catch((error) => {
         setAnalyzing(false);
@@ -77,7 +83,6 @@ export default function Scan() {
           to determine the correct category for recycling.
         </p>
 
-        {/* File Upload */}
         {!uploaded && (
           <label className="block cursor-pointer">
             <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
@@ -96,7 +101,6 @@ export default function Scan() {
           </label>
         )}
 
-        {/* Image Preview */}
         {file && (
           <img
             src={URL.createObjectURL(file)}
@@ -105,14 +109,12 @@ export default function Scan() {
           />
         )}
 
-        {/* File Name */}
         {file && (
           <p className="text-sm text-gray-500 mb-4">
             Selected: <span className="font-medium">{file.name}</span>
           </p>
         )}
 
-        {/* Buttons after file is uploaded */}
         {uploaded && (
           <div className="flex justify-center gap-4 mb-4">
             <button
@@ -133,21 +135,27 @@ export default function Scan() {
           </div>
         )}
 
-        {/* Upload Success Message */}
         {uploaded && !analyzing && !category && (
           <p className="text-green-700 font-medium mb-4">Uploaded successfully!</p>
         )}
 
-        {/* Display Category & Points */}
-        {category && (
-          <div className="mt-4">
-            <p className="text-xl font-semibold text-green-700">
-              Waste Category:{" "}
-              <span className="text-green-900">{category}</span>
-            </p>
-            <p className="mt-2 text-lg font-medium text-green-800">
-              You earned {pointsMap[category] || 0} points for this scan!
-            </p>
+        {/* Info Popup */}
+        {showInfoPopup && category && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-xl shadow-lg max-w-md text-center space-y-4">
+              <h3 className="text-2xl font-semibold text-green-700">Analysis Result</h3>
+              <p><strong>Detected Category:</strong> {category}</p>
+              <p><strong>Uploaded Date:</strong> {uploadedDate}</p>
+              <button className="mt-4 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Guidance <ArrowRight className="ml-2 w-4 h-4" />
+              </button>
+              <button
+                className="mt-4 text-gray-600 underline"
+                onClick={() => setShowInfoPopup(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         )}
       </div>
