@@ -66,11 +66,11 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-white text-black shadow-lg sticky top-0 z-50 font-sans">
+    <nav className="bg-green-700 text-white shadow-lg sticky top-0 z-50 font-sans">
       <div className="container mx-auto flex justify-between items-center px-6 py-4">
         <Link
           to="/"
-          className="flex items-center text-3xl font-bold tracking-wide hover:text-green-500 transition"
+          className="flex items-center text-3xl font-bold tracking-wide hover:text-green-200 transition"
         >
           🌱 EcoSort
         </Link>
@@ -83,8 +83,8 @@ export default function Navbar() {
               to={link.to}
               className={`py-2 px-4 rounded-md transition duration-300 ${
                 location.pathname === link.to
-                  ? "bg-green-700 text-green-300 font-semibold"
-                  : "hover:bg-green-700 hover:text-green-100"
+                  ? "bg-white text-green-700 font-semibold"
+                  : "hover:bg-white hover:text-green-700"
               }`}
             >
               {link.label}
@@ -97,7 +97,7 @@ export default function Navbar() {
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center space-x-2 w-auto px-2 py-1 rounded-full bg-green-700 hover:bg-green-600 transition shadow-md"
+                  className="flex items-center space-x-2 w-auto px-2 py-1 rounded-full bg-white text-green-700 hover:bg-green-200 transition shadow-md"
                 >
                   <FaUserCircle className="text-2xl" />
                   <span className="hidden md:block font-medium">{username}</span>
@@ -110,11 +110,11 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 flex flex-col z-50"
+                      className="absolute right-0 mt-2 w-48 bg-green-700 rounded-md shadow-lg py-2 flex flex-col z-50"
                     >
                       <Link
                         to="/profile"
-                        className="flex items-center px-4 py-2 text-black hover:bg-green-700 transition"
+                        className="flex items-center px-4 py-2 text-white hover:bg-green-600 transition"
                         onClick={() => setProfileOpen(false)}
                       >
                         <FaUserCircle className="mr-2" /> Profile
@@ -122,7 +122,7 @@ export default function Navbar() {
 
                       <Link
                         to="/edit-profile"
-                        className="flex items-center px-4 py-2 text-black hover:bg-green-700 transition"
+                        className="flex items-center px-4 py-2 text-white hover:bg-green-600 transition"
                         onClick={() => setProfileOpen(false)}
                       >
                         <FaUserCircle className="mr-2" /> Edit Profile
@@ -130,7 +130,7 @@ export default function Navbar() {
 
                       <Link
                         to={role === "admin" ? "/update-password-admin" : "/update-password"}
-                        className="flex items-center px-4 py-2 text-black hover:bg-green-700 transition"
+                        className="flex items-center px-4 py-2 text-white hover:bg-green-600 transition"
                         onClick={() => setProfileOpen(false)}
                       >
                         <FaLock className="mr-2" /> Update Password
@@ -138,7 +138,7 @@ export default function Navbar() {
 
                       <button
                         onClick={handleLogout}
-                        className="px-4 py-2 text-left text-black hover:bg-green-700 w-full transition"
+                        className="px-4 py-2 text-left text-white hover:bg-green-600 w-full transition"
                       >
                         Logout
                       </button>
@@ -152,7 +152,7 @@ export default function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden text-3xl p-2 rounded-md hover:bg-gray-200 transition"
+          className="md:hidden text-3xl p-2 rounded-md hover:bg-green-600 transition"
           onClick={() => setIsOpen(!isOpen)}
         >
           {isOpen ? <FaTimes /> : <FaBars />}
@@ -167,7 +167,7 @@ export default function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-white px-6 py-5 space-y-4 rounded-b-lg shadow-inner overflow-hidden"
+            className="md:hidden bg-green-700 px-6 py-5 space-y-4 rounded-b-lg shadow-inner overflow-hidden"
           >
             {links.map((link) => (
               <Link
@@ -176,8 +176,8 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 className={`block text-lg py-2 px-4 rounded-md transition ${
                   location.pathname === link.to
-                    ? "bg-green-700 text-green-100 font-semibold"
-                    : "hover:bg-green-700 hover:text-green-100"
+                    ? "bg-white text-green-700 font-semibold"
+                    : "hover:bg-white hover:text-green-700"
                 }`}
               >
                 {link.label}
@@ -185,12 +185,12 @@ export default function Navbar() {
             ))}
 
             {isLoggedIn && (
-              <div className="border-t border-green-700 pt-2 flex flex-col space-y-2">
-                <span className="block px-4 py-2 text-black font-medium">{username}</span>
+              <div className="border-t border-white pt-2 flex flex-col space-y-2">
+                <span className="block px-4 py-2 text-white font-medium">{username}</span>
                 <Link
                   to="/profile"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-black hover:bg-green-700 rounded-md transition"
+                  className="flex items-center px-4 py-2 text-white hover:bg-green-600 rounded-md transition"
                 >
                   <FaUserCircle className="mr-2" /> Profile
                 </Link>
@@ -198,7 +198,7 @@ export default function Navbar() {
                 <Link
                   to="/edit-profile"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-black hover:bg-green-700 rounded-md transition"
+                  className="flex items-center px-4 py-2 text-white hover:bg-green-600 rounded-md transition"
                 >
                   <FaUserCircle className="mr-2" /> Edit Profile
                 </Link>
@@ -206,14 +206,14 @@ export default function Navbar() {
                 <Link
                   to={role === "admin" ? "/update-password-admin" : "/update-password"}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center px-4 py-2 text-black hover:bg-green-700 rounded-md transition"
+                  className="flex items-center px-4 py-2 text-white hover:bg-green-600 rounded-md transition"
                 >
                   <FaLock className="mr-2" /> Update Password
                 </Link>
 
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-black hover:bg-green-700 rounded-md transition"
+                  className="w-full px-4 py-2 text-left text-white hover:bg-green-600 rounded-md transition"
                 >
                   Logout
                 </button>
