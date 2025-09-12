@@ -55,21 +55,21 @@ export default function Scan() {
 
   return (
     <section className="min-h-screen flex items-center justify-center bg-gradient-to-b from-green-50 to-green-100 px-6">
-      <div className="bg-white rounded-2xl shadow-lg p-10 w-full max-w-md text-center">
-        <h2 className="text-3xl font-bold text-green-700 mb-4">
+      <div className="bg-white rounded-2xl shadow-xl p-12 w-full max-w-2xl text-center">
+        <h2 className="text-4xl font-bold text-green-700 mb-6">
           Scan & Classify Waste
         </h2>
-        <p className="text-gray-600 mb-6">
+        <p className="text-lg text-gray-600 mb-8">
           Upload an image of your waste item, and our system will analyze it
           to determine the correct category for recycling.
         </p>
 
-        {/* Show upload area only when no file is selected */}
+        {/* Upload area */}
         {!file && (
           <label className="block cursor-pointer">
-            <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-xl p-6 mb-4 hover:bg-green-50 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
-              <Upload className="text-green-600 w-10 h-10 mb-2" />
-              <span className="text-green-700 font-medium">
+            <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-2xl p-10 mb-6 hover:bg-green-100 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
+              <Upload className="text-green-600 w-14 h-14 mb-3" />
+              <span className="text-green-700 font-medium text-lg">
                 Click to choose file or drag & drop
               </span>
             </div>
@@ -82,29 +82,29 @@ export default function Scan() {
           </label>
         )}
 
-        {/* Image Preview and Action Buttons (shown after file is selected) */}
+        {/* Image Preview */}
         {file && (
           <>
             <img
               src={URL.createObjectURL(file)}
               alt="Preview"
-              className="w-40 h-40 object-contain mx-auto rounded-md shadow-md mb-4"
+              className="w-60 h-60 object-contain mx-auto rounded-lg shadow-md mb-6"
             />
 
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-base text-gray-500 mb-6">
               Selected: <span className="font-medium">{file.name}</span>
             </p>
 
-            <div className="flex justify-between space-x-4">
+            <div className="flex justify-between space-x-6">
               <button
-                className="flex-1 px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl shadow-md hover:bg-yellow-600 active:scale-95 transition"
+                className="flex-1 px-8 py-4 bg-yellow-500 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-yellow-600 active:scale-95 transition"
                 onClick={handleReupload}
               >
                 Re-upload
               </button>
 
               <button
-                className="flex-1 px-6 py-3 bg-green-600 text-white font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition"
+                className="flex-1 px-8 py-4 bg-green-600 text-white text-lg font-semibold rounded-xl shadow-md hover:bg-green-700 active:scale-95 transition"
                 onClick={handleAnalyze}
                 disabled={loading}
               >
@@ -114,14 +114,14 @@ export default function Scan() {
           </>
         )}
 
-        {/* Display Category & Points */}
+        {/* Results */}
         {category && !loading && (
-          <div className="mt-4">
-            <p className="text-xl font-semibold text-green-700">
+          <div className="mt-8">
+            <p className="text-2xl font-semibold text-green-700">
               Waste Category:{" "}
               <span className="text-green-900">{category}</span>
             </p>
-            <p className="mt-2 text-lg font-medium text-green-800">
+            <p className="mt-3 text-xl font-medium text-green-800">
               You earned {pointsMap[category] || 0} points for this scan!
             </p>
           </div>
