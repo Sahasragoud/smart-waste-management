@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Upload } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Scan() {
   const [file, setFile] = useState<File | null>(null);
@@ -7,7 +8,9 @@ export default function Scan() {
   const [description, setDescription] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const navigate = useNavigate();
 
+  // Local descriptions (no API)
   const categoryDescriptions: { [key: string]: string } = {
     Batteries: "Dispose at hazardous waste collection points.",
     "E-Waste": "Recycle electronics at e-waste centers.",
@@ -29,7 +32,7 @@ export default function Scan() {
     "Plastic Bottles": "Rinse and recycle in plastic bottle bins.",
   };
 
-  // Fake detection based on file name
+  // Fake detection (just filename check)
   const fakeDetection = (fileName: string) => {
     const name = fileName.toLowerCase();
     if (name.includes("battery")) return "Batteries";
@@ -63,14 +66,13 @@ export default function Scan() {
     setCategory(null);
     setDescription(null);
 
-    // Simulate analysis delay
     setTimeout(() => {
       const detectedCategory = fakeDetection(file.name);
       setCategory(detectedCategory);
       setDescription(categoryDescriptions[detectedCategory] || "No description available.");
       setShowPopup(true);
       setLoading(false);
-    }, 1000); // 1 second delay to mimic processing
+    }, 1000);
   };
 
   const handleReupload = () => {
@@ -89,7 +91,7 @@ export default function Scan() {
         </h2>
         <p className="text-lg text-gray-600 mb-8">
           Upload an image of your waste item, and our system will analyze it
-          to determine the correct category for recycling.
+          using simple keyword detection (no internet needed).
         </p>
 
         {!file && (
@@ -145,21 +147,13 @@ export default function Scan() {
             <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
               <h3 className="text-2xl font-bold text-green-700 mb-4">{category}</h3>
               <p className="text-gray-700 mb-6">{description}</p>
+
               <button
-                className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl hover:bg-yellow-600 active:scale-95 transition mb-3"
-                onClick={() =>
-                  window.location.href = `/guidance/${encodeURIComponent(category)}`
-                }
+                className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl hover:bg-yellow-600 active:scale-95 transition"
+                onClick={() => navigate(`/guidance/${encodeURIComponent(category)}`)}
               >
                 Guidance
               </button>
-       <button
-  className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl hover:bg-yellow-600 active:scale-95 transition mb-3"
-  onClick={() => window.location.href = `/guidance/${encodeURIComponent(category)}`}
->
-  Guidance
-</button>
-
             </div>
           </div>
         )}
