@@ -1,46 +1,20 @@
 import { useState } from "react";
-import { Upload, ArrowRight, X } from "lucide-react";
+import { Upload } from "lucide-react";
 
 export default function Scan() {
   const [file, setFile] = useState<File | null>(null);
-  const [category, setCategory] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploaded, setUploaded] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
-  const [uploadDate, setUploadDate] = useState<string>("");
-
-  const categoryDescriptions: { [key: string]: string } = {
-    "Batteries": "Improper disposal leads to soil and water contamination due to heavy metals.",
-    "E-Waste": "Contains hazardous chemicals harming ecosystems and human health if not properly recycled.",
-    "Paints": "Release volatile organic compounds (VOCs) harmful to air quality.",
-    "Pesticides": "Pollute water sources and affect non-target organisms including beneficial insects.",
-    "Ceramic Products": "Non-biodegradable, accumulate in landfills, causing long-term waste issues.",
-    "Diapers": "Non-biodegradable waste that causes land and water pollution.",
-    "Plastic Bag Warps": "Cause blockage in drainage and are harmful to marine life.",
-    "Sanitary Napkins": "Contain plastics that are slow to degrade and contaminate the environment.",
-    "Coffee Tea Bags": "Often made with plastics, contributing to microplastic pollution.",
-    "Egg-Shells": "Biodegradable but may attract pests if not properly composted.",
-    "Food-Scraps": "Can generate methane in landfills if not composted properly.",
-    "Kitchen-Waste": "Leads to methane emissions if not composted, contributing to greenhouse gases.",
-    "Yard Trimmings": "Should be composted; otherwise, they occupy landfill space unnecessarily.",
-    "Cans All Types": "If not recycled, contribute to metal waste accumulation.",
-    "Glass Containers": "Non-biodegradable and can be hazardous if broken.",
-    "Paper Products": "Deforestation and pollution if not recycled.",
-    "Plastic Bottles": "Persist in the environment for hundreds of years causing pollution.",
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     if (selectedFile) {
       setUploading(true);
-      setUploadDate(new Date().toLocaleString());
       setTimeout(() => {
         setFile(selectedFile);
         setUploading(false);
         setUploaded(true);
-        setCategory(null);
-        setShowPopup(false);
       }, 1500);
     }
   };
@@ -48,23 +22,14 @@ export default function Scan() {
   const handleReUpload = () => {
     setFile(null);
     setUploaded(false);
-    setCategory(null);
-    setShowPopup(false);
   };
 
   const handleAnalyze = () => {
     if (!file) return;
-
     setAnalyzing(true);
-
     setTimeout(() => {
       setAnalyzing(false);
-
-      // Extract file name without extension as category
-      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
-
-      setCategory(fileNameWithoutExtension);
-      setShowPopup(true);
+      alert("Analysis complete!");
     }, 2000);
   };
 
@@ -75,10 +40,6 @@ export default function Scan() {
         <h2 className="text-3xl font-bold text-green-700 mb-4">
           Scan & Classify Waste
         </h2>
-
-        <p className="text-gray-600 mb-6">
-          Upload an image of your waste item, and our system will analyze it to determine the correct category for recycling.
-        </p>
 
         {/* File Upload */}
         <label className="block cursor-pointer">
@@ -101,14 +62,8 @@ export default function Scan() {
           <img
             src={URL.createObjectURL(file)}
             alt="Preview"
-            className="w-36 h-36 object-contain mx-auto rounded-md shadow-md mb-4"
+            className="w-full h-auto object-contain mx-auto rounded-md shadow-md mb-4"
           />
-        )}
-
-        {file && (
-          <p className="text-sm text-gray-500 mb-4 truncate">
-            Selected: <span className="font-medium">{file.name}</span>
-          </p>
         )}
 
         {uploaded && (
@@ -128,42 +83,6 @@ export default function Scan() {
             >
               {analyzing ? "Analyzing..." : "Analyze"}
             </button>
-          </div>
-        )}
-
-        {uploaded && !analyzing && !category && (
-          <p className="text-green-700 font-medium">Uploaded successfully!</p>
-        )}
-
-        {/* Result Info Box */}
-        {showPopup && category && (
-          <div className="mt-6 p-4 border rounded-xl bg-green-100 text-left relative shadow">
-            <h3 className="text-xl font-semibold text-green-800 mb-2">
-              Waste Category:
-            </h3>
-
-            <p className="text-green-900 font-bold mb-4">{category}</p>
-
-            <p className="italic text-gray-700 mb-4 text-sm">
-              {categoryDescriptions[category] || "No description available."}
-            </p>
-
-            <p className="text-gray-500 mb-4 text-xs">
-              Uploaded on: <span className="font-medium">{uploadDate}</span>
-            </p>
-
-            <div className="flex justify-between items-center gap-3">
-              <button className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 text-sm">
-                For Guidance <ArrowRight className="ml-2" size={16} />
-              </button>
-
-              <button
-                className="flex items-center justify-center px-4 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 text-sm"
-                onClick={() => setShowPopup(false)}
-              >
-                Close <X className="ml-2" size={16} />
-              </button>
-            </div>
           </div>
         )}
       </div>

@@ -1,8 +1,8 @@
 {
   "Hazardous": [
-    {
-      "Plastic Bottles": {
-        "title": "How to Properly Recycle Plastic Bottles",
+    
+       {
+        "title":"plastic Bottles",
         "steps": [
           "Collect all used plastic bottles from home and separate them from other waste like cans, glass, or food scraps.",
           "Rinse the bottles to remove leftover liquids or residue to prevent contamination in the recycling process.",
@@ -22,11 +22,11 @@
           "Follow the guidelines of the recycling center carefully.",
           "Store bottles safely before drop-off to avoid leaks or contamination."
         ]
-      }
-    },
+      },
+    
     {
-      "Batteries": {
-        "title": "How to Properly Recycle Batteries",
+      {
+        "title": "Batteries",
         "steps": [
           "Collect all types of used batteries (AA, AAA, button cells, rechargeable, etc.) from home and keep them separate from other household waste.",
           "Place batteries in a sealed, non-metal container (like a plastic box) to prevent short circuits. Store away from children, pets, and heat sources.",
@@ -44,7 +44,7 @@
           "Store batteries safely before transport to avoid leaks or short circuits."
         ]
       }
-    },
+    ,
     {
       "E-Waste": {
         "title": "How to Properly Recycle E-Waste",
