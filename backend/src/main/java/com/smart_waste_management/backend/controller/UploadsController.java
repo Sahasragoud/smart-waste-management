@@ -1,5 +1,6 @@
 package com.smart_waste_management.backend.controller;
 
+import com.smart_waste_management.backend.dto.ReUploadRequest;
 import com.smart_waste_management.backend.dto.UploadRequest;
 import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.exception.UploadNotFoundException;
@@ -110,6 +111,12 @@ public class UploadsController {
     @DeleteMapping("/upload/{id}")
     public void deleteUpload(@PathVariable Long id) throws UploadNotFoundException {
         uploadService.deleteUpload(id);
+    }
+
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
+    @PutMapping("/re-upload/{uploadId}")
+    public UploadResponse reUpload(@PathVariable Long uploadId, @RequestBody ReUploadRequest reUploadRequest) throws UploadNotFoundException {
+        return uploadService.reUpload(uploadId, reUploadRequest);
     }
 
 

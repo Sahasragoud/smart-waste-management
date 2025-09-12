@@ -1,5 +1,6 @@
 package com.smart_waste_management.backend.service;
 
+import com.smart_waste_management.backend.dto.ReUploadRequest;
 import com.smart_waste_management.backend.dto.UploadRequest;
 import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
@@ -23,4 +24,5 @@ public interface UploadService {
     UploadResponse getUploadById(Long id) throws UploadNotFoundException;
     ResponseEntity<Resource> getImage(Long id) throws UploadNotFoundException, MalformedURLException;
     void deleteUpload(Long id) throws UploadNotFoundException;
+    UploadResponse reUpload(Long id, ReUploadRequest reUploadRequest) throws UploadNotFoundException;
 }

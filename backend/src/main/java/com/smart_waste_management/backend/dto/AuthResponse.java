@@ -1,10 +1,6 @@
 package com.smart_waste_management.backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
 public class AuthResponse {
     private Long id;
     private String username;

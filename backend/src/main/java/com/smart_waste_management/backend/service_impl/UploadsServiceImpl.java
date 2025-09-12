@@ -1,5 +1,6 @@
 package com.smart_waste_management.backend.service_impl;
 
+import com.smart_waste_management.backend.dto.ReUploadRequest;
 import com.smart_waste_management.backend.dto.UploadRequest;
 import com.smart_waste_management.backend.dto.UploadResponse;
 import com.smart_waste_management.backend.entity.Uploads;
@@ -169,4 +170,36 @@ public class UploadsServiceImpl implements UploadService {
         );
         uploadsRepository.deleteById(id);
     }
+
+    @Override
+    public UploadResponse reUpload(Long id, ReUploadRequest reUploadRequest) throws UploadNotFoundException {
+        Uploads upload = uploadsRepository.findById(id).orElseThrow(() -> new UploadNotFoundException("Upload not found with id: " + id));
+
+        if(reUploadRequest.getFileName() != null) upload.setFileName(reUploadRequest.getFileName());
+        if(reUploadRequest.getFileType() != null) upload.setFileType(reUploadRequest.getFileType());
+        if(reUploadRequest.getFileSize() != null) upload.setFileSize(reUploadRequest.getFileSize());
+        upload.setCreatedAt(LocalDateTime.now());
+        if(reUploadRequest.getConfidence() != null) upload.setConfidence(reUploadRequest.getConfidence());
+        if(reUploadRequest.getFilePath() != null) upload.setFilePath(reUploadRequest.getFilePath());
+        if(reUploadRequest.getCategory()!= null) upload.setCategory(reUploadRequest.getCategory());
+
+        uploadsRepository.save(upload);
+
+        return new UploadResponse(
+                upload.getId(),
+                upload.getFileName(),
+                upload.getFileType(),
+                upload.getFileSize(),
+                upload.getFilePath(),
+                upload.getUser().getId(),
+                upload.getUser().getUsername(),
+                upload.getUser().getEmail(),
+                upload.getCategory(),
+                upload.getConfidence(),
+                null,
+                upload.getCreatedAt().toString()
+        );
+    }
+
+
 }

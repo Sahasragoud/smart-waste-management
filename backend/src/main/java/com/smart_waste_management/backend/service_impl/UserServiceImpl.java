@@ -26,11 +26,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User updateUser(Long userId, UpdateProfileRequest profileRequest) throws UserNotFoundException {
-        User user = userRepository.findByEmail(profileRequest.getEmail());
-        if(user == null) {
-            throw new UserNotFoundException("User not found by email, " + profileRequest.getEmail());
-        }
-
+        User user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException("User not found with id : " + userId));
         if(profileRequest.getUsername() != null) user.setUsername(profileRequest.getUsername());
         if(profileRequest.getEmail() != null) user.setEmail(profileRequest.getEmail());
         if(profileRequest.getAddress() != null) user.setAddress(profileRequest.getAddress());
