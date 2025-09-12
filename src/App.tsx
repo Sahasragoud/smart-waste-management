@@ -17,6 +17,8 @@ import Users from "./pages/Users";
 import Uploads from "./pages/Uploads";
 import RewardsAdmin from "./pages/RewardsAdmin.tsx";
 import Leaderboard from "./pages/Leaderboard.tsx";
+import UpdatePassword from "./pages/UpdatePassword.tsx";
+import EditProfile from "./pages/Editprofile.tsx"; 
 
 function App() {
   return (
@@ -83,6 +85,23 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["admin"]}>
                 <Uploads />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+  path="/update-password"
+  element={
+    <ProtectedRoute allowedRoles={["user", "admin"]}>
+      <UpdatePassword />
+    </ProtectedRoute>
+  }
+/>
+ {/* Edit Profile */}
+          <Route
+            path="/edit-profile"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin"]}>
+                <EditProfile />
               </ProtectedRoute>
             }
           />

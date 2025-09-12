@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-// Fix default marker issue in React-Leaflet
+
+// Fix default marker issue
 const DefaultIcon = L.icon({
   iconUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png",
@@ -21,65 +21,39 @@ interface Centre {
 export default function Centers() {
   const [centres, setCentres] = useState<Centre[]>([]);
   const [locationStatus, setLocationStatus] = useState("Fetching location...");
-  const [userLocation, setUserLocation] = useState<[number, number] | null>(
-    null
-  );
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
-  // Example static centres (replace with real ones)
   const staticCentres: Centre[] = [
-    {
-      id: "1",
-      name: "Green Earth Recycling",
-      address: "MG Road, Hyderabad",
-      distance: 1200,
-      coordinates: [78.4867, 17.385], // lng, lat
-    },
-    {
-      id: "2",
-      name: "EcoBin Recycling Centre",
-      address: "Banjara Hills, Hyderabad",
-      distance: 3200,
-      coordinates: [78.4424, 17.4126],
-    },
-    {
-      id: "3",
-      name: "Smart Waste Hub",
-      address: "Kukatpally, Hyderabad",
-      distance: 5600,
-      coordinates: [78.3995, 17.4949],
-    },
+    { id: "1", name: "Green Earth Recycling", address: "MG Road, Hyderabad", distance: 1200, coordinates: [78.4867, 17.385] },
+    { id: "2", name: "EcoBin Recycling Centre", address: "Banjara Hills, Hyderabad", distance: 3200, coordinates: [78.4424, 17.4126] },
+    { id: "3", name: "Smart Waste Hub", address: "Kukatpally, Hyderabad", distance: 5600, coordinates: [78.3995, 17.4949] },
   ];
 
   useEffect(() => {
-    const getLocation = () => {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (pos) => {
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            setUserLocation([lat, lng]);
-            setLocationStatus("Showing static centres near your location 🌍");
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lng = pos.coords.longitude;
+          setUserLocation([lat, lng]);
+          setLocationStatus("Showing static centres near your location 🌍");
 
-            // Sort centres by distance
-            const sorted = [...staticCentres].sort(
-              (a, b) =>
-                (typeof a.distance === "number" ? a.distance : Infinity) -
-                (typeof b.distance === "number" ? b.distance : Infinity)
-            );
-            setCentres(sorted);
-          },
-          () => {
-            setLocationStatus("⚠️ Location denied, showing default centres");
-            setCentres(staticCentres);
-          }
-        );
-      } else {
-        setLocationStatus("❌ Geolocation not supported, showing default centres");
-        setCentres(staticCentres);
-      }
-    };
-
-    getLocation();
+          const sorted = [...staticCentres].sort(
+            (a, b) =>
+              (typeof a.distance === "number" ? a.distance : Infinity) -
+              (typeof b.distance === "number" ? b.distance : Infinity)
+          );
+          setCentres(sorted);
+        },
+        () => {
+          setLocationStatus("⚠️ Location denied, showing default centres");
+          setCentres(staticCentres);
+        }
+      );
+    } else {
+      setLocationStatus("❌ Geolocation not supported, showing default centres");
+      setCentres(staticCentres);
+    }
   }, []);
 
   const openInGoogleMaps = (coords: [number, number]) => {
@@ -89,7 +63,7 @@ export default function Centers() {
   };
 
   return (
-    <section className="min-h-screen bg-gray-50 py-16 px-6">
+    <section className="min-h-screen bg-gray-50 py-16 px-6 relative z-0">
       <h2 className="text-3xl font-extrabold text-green-700 text-center mb-8">
         Nearby Recycling Centres ♻️
       </h2>
@@ -97,9 +71,9 @@ export default function Centers() {
       <p className="text-center text-gray-600 mb-6">{locationStatus}</p>
 
       {/* Map Section */}
-      <div className="h-[400px] w-full max-w-5xl mx-auto mb-8 rounded-2xl overflow-hidden shadow-lg">
+      <div className="h-[60vh] w-full max-w-5xl mx-auto mb-8 rounded-2xl overflow-hidden shadow-lg z-0">
         <MapContainer
-          center={userLocation || [17.385, 78.4867]} // Default Hyderabad
+          center={userLocation || [17.385, 78.4867]}
           zoom={12}
           className="h-full w-full"
         >
@@ -108,14 +82,12 @@ export default function Centers() {
             attribution="&copy; OpenStreetMap contributors"
           />
 
-          {/* User Location */}
           {userLocation && (
             <Marker position={userLocation}>
               <Popup>📍 You are here</Popup>
             </Marker>
           )}
 
-          {/* Static Centres */}
           {centres.map((centre) => (
             <Marker
               key={centre.id}
@@ -154,9 +126,7 @@ export default function Centers() {
               centres.map((centre, idx) => (
                 <tr
                   key={centre.id}
-                  className={`border-b ${
-                    idx % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  }`}
+                  className={`border-b ${idx % 2 === 0 ? "bg-gray-50" : "bg-white"}`}
                 >
                   <td className="py-3 px-4 font-semibold">{centre.name}</td>
                   <td className="py-3 px-4">{centre.address}</td>
