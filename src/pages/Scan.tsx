@@ -11,12 +11,12 @@ export default function Scan() {
   const [uploadDate, setUploadDate] = useState<string>("");
 
   const categoryDescriptions: { [key: string]: string } = {
-    Batteries: "Improper disposal leads to soil and water contamination due to heavy metals.",
+    "Batteries": "Improper disposal leads to soil and water contamination due to heavy metals.",
     "E-Waste": "Contains hazardous chemicals harming ecosystems and human health if not properly recycled.",
-    Paints: "Release volatile organic compounds (VOCs) harmful to air quality.",
-    Pesticides: "Pollute water sources and affect non-target organisms including beneficial insects.",
+    "Paints": "Release volatile organic compounds (VOCs) harmful to air quality.",
+    "Pesticides": "Pollute water sources and affect non-target organisms including beneficial insects.",
     "Ceramic Products": "Non-biodegradable, accumulate in landfills, causing long-term waste issues.",
-    Diapers: "Non-biodegradable waste that causes land and water pollution.",
+    "Diapers": "Non-biodegradable waste that causes land and water pollution.",
     "Plastic Bag Warps": "Cause blockage in drainage and are harmful to marine life.",
     "Sanitary Napkins": "Contain plastics that are slow to degrade and contaminate the environment.",
     "Coffee Tea Bags": "Often made with plastics, contributing to microplastic pollution.",

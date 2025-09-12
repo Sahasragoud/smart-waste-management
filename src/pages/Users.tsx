@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { createMember, deleteUser, getUsersByRole } from "../services/AdminServices";
+import { createUpload, registerUser, updateProfile } from "../services/UserServices";
+import type { UpdateProfile } from "../types/updateProfile";
 
 interface User {
   id: number;
@@ -40,6 +42,11 @@ export default function Users() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const [admin, setAdmin] = useState<{ name: string } | null>(null);
+
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+
+  const [uploadingUser, setUploadingUser] = useState<number | null>(null);
+  const [uploadResults, setUploadResults] = useState<Record<number, { category: string; guidance: string }>>({});
 
 
 const fetchUsers = async () => {
@@ -101,6 +108,22 @@ const fetchUsers = async () => {
     }
   };
 
+  const handleUpdateUser = async () => {
+  if (!editingUser) return;
+
+  try {
+    await updateProfile(editingUser.id, newUserData as UpdateProfile);
+    fetchUsers();
+    fetchAdmins();
+    setShowModal(false);
+    setNewUserData({});
+    setEditingUser(null); // reset editing state
+  } catch (err) {
+    console.error("Error updating user", err);
+  }
+};
+
+
   const handleAddUser = async () => {
   const errors: Record<string, string> = {};
   const requiredFields = ["username", "email", "phoneNumber", "address", "dateOfBirth", "password"];
@@ -130,7 +153,12 @@ const fetchUsers = async () => {
   };
 
   try {
-    await createMember(newUser);
+    if (newUserRole === "admin") {
+        await createMember(newUser); 
+      } else {
+        await registerUser(newUser); 
+      }
+
     fetchUsers();
     fetchAdmins();
     setShowModal(false);
@@ -247,27 +275,71 @@ function renderTable(
                 <td className="border px-4 py-2">{user.dateOfBirth}</td>
                 <td className="border px-4 py-2">{user.createdDate}</td>
                 {showPoints && <td className="border px-4 py-2">{user.points}</td>}
+                
                 <td className="border px-4 py-2 space-x-2">
-                  <button className="px-2 py-1 bg-blue-500 text-white rounded">Edit</button>
-                  <button
-                    onClick={() => onDelete(user.id)}
-                    className="px-2 py-1 bg-red-500 text-white rounded"
-                  >
-                    Delete
-                  </button>
-                  {title === "Users" && (
-                    <>
-                      <button className="px-2 py-1 bg-yellow-500 text-white rounded">
-                        Update Password
-                      </button>
-                      <button className="px-2 py-1 bg-purple-500 text-white rounded">
-                        Upload
-                      </button>
-                    </>
-                  )}
-                </td>
-              </tr>
-            ))
+                <button
+                  onClick={() => {
+                    setEditingUser(user); // set the selected user
+                    setNewUserData(user); // pre-fill modal with user data
+                    setNewUserRole(user.role === "ADMIN" ? "admin" : "user");
+                    setShowModal(true);
+                  }}
+                  className="px-2 py-1 bg-blue-500 text-white rounded"
+                >
+                  Edit
+                </button>
+
+                <button
+                  onClick={() => onDelete(user.id)}
+                  className="px-2 py-1 bg-red-500 text-white rounded"
+                >
+                  Delete
+                </button>
+
+                {/* ✅ Extra buttons for Users only */}
+          {title === "Users" && (
+            <>
+              <button className="px-2 py-1 bg-yellow-500 text-white rounded">
+                Update Password
+              </button>
+
+              {/* Upload Button */}
+              <label className="px-2 py-1 bg-purple-500 text-white rounded cursor-pointer">
+                {uploadingUser === user.id ? "Uploading..." : "Upload"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    if (!e.target.files?.[0]) return;
+                    const file = e.target.files[0];
+                    try {
+                      setUploadingUser(user.id);
+                      const res = await createUpload(user.id, file);
+                      setUploadResults((prev) => ({
+                        ...prev,
+                        [user.id]: res.data,
+                      }));
+                    } catch (err) {
+                      console.error("Upload failed", err);
+                    } finally {
+                      setUploadingUser(null);
+                    }
+                  }}
+                />
+              </label>
+
+              {/* Inline Upload Result */}
+              {uploadResults[user.id] && (
+                <span className="ml-2 text-xs px-2 py-1 rounded bg-purple-100 text-purple-700">
+                  {uploadResults[user.id].category}: {uploadResults[user.id].guidance}
+                </span>
+              )}
+            </>
+          )}
+        </td>
+      </tr>
+    ))
           ) : (
             <tr>
               <td
@@ -293,7 +365,7 @@ function renderTable(
           Prev
         </button>
         <p className="text-gray-600">
-          Page {page} of {totalPages}
+          Page {page+1} of {totalPages}
         </p>
         <button
           disabled={page === totalPages-1}
@@ -378,13 +450,16 @@ const chartData = [
               />
               {formErrors.email && <p className="text-red-500 text-sm">{formErrors.email}</p>}
 
-              <input
-                type="password"
-                placeholder="Password"
-                value={newUserData.password || ""}
-                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                className="border px-3 py-2 rounded"
-              />
+              {!editingUser && (
+                  <input
+                    type="password"
+                    placeholder="Password"
+                    value={newUserData.password || ""}
+                    onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                    className="border px-3 py-2 rounded"
+                  />
+                )}
+
               {formErrors.password && <p className="text-red-500 text-sm">{formErrors.password}</p>}
 
               <input
@@ -416,18 +491,24 @@ const chartData = [
 
             <div className="flex justify-end mt-4 gap-2">
               <button
-                onClick={() => { setShowModal(false); setNewUserData({}); setFormErrors({}); }}
+                onClick={() => {
+                  setShowModal(false);
+                  setNewUserData({});
+                  setFormErrors({});
+                  setEditingUser(null);
+                }}
                 className="px-4 py-2 bg-gray-300 rounded"
               >
                 Cancel
               </button>
+
               <button
-                onClick={handleAddUser}
+                onClick={editingUser ? handleUpdateUser : handleAddUser}
                 className="px-4 py-2 bg-green-600 text-white rounded"
               >
-                Add
+                {editingUser ? "Update" : "Add"}
               </button>
-            </div>
+              </div>
           </div>
         </div>
       )}
