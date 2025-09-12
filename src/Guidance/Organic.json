@@ -1,0 +1,109 @@
+{
+  "Organic": [
+    {
+      "Coffee_Tea_Bags": {
+        "title": "How to Properly Recycle Coffee & Tea Bags",
+        "steps": [
+          "Collect used coffee grounds and tea bags after brewing.",
+          "Check if tea bags contain synthetic materials; prefer compostable ones.",
+          "Remove any staples or plastic parts from tea bags.",
+          "Add coffee grounds and tea bags to your home compost bin or local composting facility.",
+          "Use composted material as fertilizer for plants.",
+          "Encourage others to compost coffee and tea waste instead of throwing it in the trash.",
+          "Spread awareness about reducing packaging waste by using loose leaf tea or bulk coffee."
+        ],
+        "precautions": [
+          "Do not compost tea bags that contain plastic components.",
+          "Avoid composting excessive amounts of coffee or tea waste at once to maintain compost health.",
+          "Do not use compost from non-compostable tea bags.",
+          "Store waste in a dry container before composting to prevent mold.",
+          "Do not throw coffee grounds directly into storm drains."
+        ]
+      }
+    },
+    {
+      "Egg_Shells": {
+        "title": "How to Properly Recycle Egg Shells",
+        "steps": [
+          "Collect clean eggshells after use.",
+          "Rinse to remove egg residue and let them dry.",
+          "Crush the eggshells into small pieces for faster decomposition.",
+          "Add crushed eggshells to your compost bin or home garden soil.",
+          "Eggshells enrich the compost with calcium and improve soil structure.",
+          "Encourage others to compost eggshells instead of throwing them in regular trash.",
+          "Spread awareness of the benefits of eggshell composting."
+        ],
+        "precautions": [
+          "Do not compost large quantities at once to avoid imbalance.",
+          "Ensure eggshells are clean and dry before composting.",
+          "Avoid adding eggshells with raw egg residue to prevent attracting pests.",
+          "Do not throw eggshells in plastic waste bins.",
+          "Do not burn eggshells."
+        ]
+      }
+    },
+    {
+      "Food_Scraps": {
+        "title": "How to Properly Recycle Food Scraps",
+        "steps": [
+          "Collect vegetable peels, fruit scraps, leftover food, and bread crumbs.",
+          "Separate food scraps from non-compostable waste like plastics and metals.",
+          "Use a home compost bin or local composting service for food waste.",
+          "Avoid composting meat, dairy, or oily food unless your system supports it.",
+          "Composted food scraps turn into nutrient-rich fertilizer for plants and soil.",
+          "Educate family and neighbors about reducing food waste through composting.",
+          "Spread awareness on preventing food waste and its environmental impact."
+        ],
+        "precautions": [
+          "Do not compost meat, dairy, or greasy food in home compost (unless certified for composting).",
+          "Store food scraps in a sealed container to prevent odors.",
+          "Avoid mixing food scraps with recyclables.",
+          "Do not burn food waste.",
+          "Do not throw food scraps in plastic bags or landfill bins."
+        ]
+      }
+    },
+    {
+      "Kitchen_Waste": {
+        "title": "How to Properly Recycle Kitchen Waste",
+        "steps": [
+          "Collect peelings, trimmings, coffee grounds, eggshells, and leftover vegetable matter.",
+          "Separate biodegradable kitchen waste from plastics and metals.",
+          "Use a compost bin or municipal composting facility.",
+          "Ensure waste is free from plastic or non-biodegradable items.",
+          "Compost kitchen waste into rich organic matter for gardens.",
+          "Share this process with family and neighbors to promote sustainable disposal.",
+          "Advocate for responsible kitchen waste disposal."
+        ],
+        "precautions": [
+          "Do not compost oils, fats, or dairy unless specifically allowed.",
+          "Do not use plastic bags in compost bins.",
+          "Store waste in covered containers to prevent pests.",
+          "Do not burn kitchen waste.",
+          "Keep kitchen waste away from children and pets."
+        ]
+      }
+    },
+    {
+      "Yard_Trimmings": {
+        "title": "How to Properly Recycle Yard Trimmings",
+        "steps": [
+          "Collect leaves, grass clippings, small branches, and plant trimmings.",
+          "Separate yard trimmings from plastics, metals, and hazardous waste.",
+          "Use home composting or municipal green waste collection services.",
+          "Chop large branches into smaller pieces for easier composting.",
+          "Avoid composting diseased plants or invasive weeds.",
+          "Use composted yard trimmings to enrich garden soil or as mulch.",
+          "Promote sustainable yard waste disposal practices."
+        ],
+        "precautions": [
+          "Do not compost chemically treated plants or diseased plant matter.",
+          "Avoid composting large wood chunks without proper processing.",
+          "Do not mix yard trimmings with regular garbage.",
+          "Do not burn yard waste as it can release harmful smoke.",
+          "Store trimmings properly to prevent pest attraction."
+        ]
+      }
+    }
+  ]
+}

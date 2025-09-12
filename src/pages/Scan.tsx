@@ -59,8 +59,11 @@ export default function Scan() {
 
     setTimeout(() => {
       setAnalyzing(false);
-      const dummyCategory = "Plastic Bottles";
-      setCategory(dummyCategory);
+
+      // Extract file name without extension as category
+      const fileNameWithoutExtension = file.name.replace(/\.[^/.]+$/, "");
+
+      setCategory(fileNameWithoutExtension);
       setShowPopup(true);
     }, 2000);
   };
