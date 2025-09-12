@@ -5,10 +5,10 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
-  FaCog,
   FaBell,
   FaMoon,
   FaSun,
+  FaLock,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -75,7 +75,7 @@ export default function Navbar() {
     links.push({ to: "/admin/users", label: "Users" });
     links.push({ to: "/admin/uploads", label: "Uploads" });
     links.push({ to: "/admin/rewards", label: "Rewards" });
-    links.push({ to: "/leaderboard", label: "Leaderboard" }); // ✅ Fixed
+    links.push({ to: "/leaderboard", label: "Leaderboard" });
   } else {
     links.push({ to: "/dashboard", label: "Dashboard" });
     links.push({ to: "/scan", label: "Scans" });
@@ -149,19 +149,21 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
                       transition={{ duration: 0.2 }}
-                      className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 flex flex-col z-50"
+                      className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-2 flex flex-col z-50"
                     >
                       <Link
                         to="/profile"
                         className="flex items-center px-4 py-2 text-black dark:text-white hover:bg-green-700 dark:hover:bg-gray-700 transition"
+                        onClick={() => setProfileOpen(false)}
                       >
                         <FaUserCircle className="mr-2" /> Profile
                       </Link>
                       <Link
-                        to="/settings"
+                        to={role === "admin" ? "/update-password-admin" : "/update-password"}
                         className="flex items-center px-4 py-2 text-black dark:text-white hover:bg-green-700 dark:hover:bg-gray-700 transition"
+                        onClick={() => setProfileOpen(false)}
                       >
-                        <FaCog className="mr-2" /> Settings
+                        <FaLock className="mr-2" /> Update Password
                       </Link>
                       <button
                         onClick={handleLogout}
@@ -222,11 +224,11 @@ export default function Navbar() {
                   <FaUserCircle className="mr-2" /> Profile
                 </Link>
                 <Link
-                  to="/settings"
+                  to={role === "admin" ? "/update-password-admin" : "/update-password"}
                   onClick={() => setIsOpen(false)}
                   className="flex items-center px-4 py-2 text-black dark:text-white hover:bg-green-700 dark:hover:bg-gray-700 rounded-md transition"
                 >
-                  <FaCog className="mr-2" /> Settings
+                  <FaLock className="mr-2" /> Update Password
                 </Link>
                 <button
                   onClick={handleLogout}
