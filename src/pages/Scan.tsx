@@ -4,14 +4,53 @@ import { Upload } from "lucide-react";
 export default function Scan() {
   const [file, setFile] = useState<File | null>(null);
   const [category, setCategory] = useState<string | null>(null);
-  const [points, setPoints] = useState<number>(0);
+  const [description, setDescription] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
-  const pointsMap: { [key: string]: number } = {
-    Plastic: 10,
-    Organic: 5,
-    "E-Waste": 20,
-    Hazardous: 15,
+  const categoryDescriptions: { [key: string]: string } = {
+    Batteries: "Dispose at hazardous waste collection points.",
+    "E-Waste": "Recycle electronics at e-waste centers.",
+    Paints: "Take unused paints to hazardous waste facilities.",
+    Pesticides: "Dispose according to local hazardous waste rules.",
+    "Ceramic Products": "Dispose in general waste or recycle if possible.",
+    Diapers: "Dispose in sanitary waste bins.",
+    "Plastic Bags & Wraps": "Recycle with plastic bag collection programs.",
+    "Sanitary Napkin": "Use sanitary waste disposal.",
+    "Styrofoam Products": "Recycle if local programs accept, otherwise general waste.",
+    "Coffee & Tea Bags": "Compost if biodegradable.",
+    "Egg Shells": "Compost as organic waste.",
+    "Food Scraps": "Compost or dispose as organic waste.",
+    "Kitchen Waste": "Compost or dispose in organic bin.",
+    "Yard Trimmings": "Compost or use green waste collection.",
+    "Cans (All Types)": "Rinse and recycle in metal bins.",
+    "Glass Containers": "Rinse and recycle in glass bins.",
+    "Paper Products": "Recycle paper products in paper bins.",
+    "Plastic Bottles": "Rinse and recycle in plastic bottle bins.",
+  };
+
+  // Fake detection based on file name
+  const fakeDetection = (fileName: string) => {
+    const name = fileName.toLowerCase();
+    if (name.includes("battery")) return "Batteries";
+    if (name.includes("ewaste") || name.includes("electronics")) return "E-Waste";
+    if (name.includes("paint")) return "Paints";
+    if (name.includes("pesticide")) return "Pesticides";
+    if (name.includes("ceramic")) return "Ceramic Products";
+    if (name.includes("diaper")) return "Diapers";
+    if (name.includes("plastic")) return "Plastic Bags & Wraps";
+    if (name.includes("napkin") || name.includes("sanitary")) return "Sanitary Napkin";
+    if (name.includes("styrofoam")) return "Styrofoam Products";
+    if (name.includes("coffee") || name.includes("tea")) return "Coffee & Tea Bags";
+    if (name.includes("egg")) return "Egg Shells";
+    if (name.includes("food") || name.includes("scrap")) return "Food Scraps";
+    if (name.includes("kitchen")) return "Kitchen Waste";
+    if (name.includes("yard")) return "Yard Trimmings";
+    if (name.includes("can")) return "Cans (All Types)";
+    if (name.includes("glass")) return "Glass Containers";
+    if (name.includes("paper")) return "Paper Products";
+    if (name.includes("bottle")) return "Plastic Bottles";
+    return "Unknown Category";
   };
 
   const handleAnalyze = () => {
@@ -20,37 +59,26 @@ export default function Scan() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     setLoading(true);
     setCategory(null);
+    setDescription(null);
 
-    fetch("/api/analyze", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setLoading(false);
-        const detectedCategory = data.category || "Unknown Category";
-        setCategory(detectedCategory);
-
-        if (pointsMap[detectedCategory]) {
-          setPoints((prev) => prev + pointsMap[detectedCategory]);
-        }
-      })
-      .catch((error) => {
-        setLoading(false);
-        console.error("Error uploading file:", error);
-        alert("Something went wrong. Please try again.");
-      });
+    // Simulate analysis delay
+    setTimeout(() => {
+      const detectedCategory = fakeDetection(file.name);
+      setCategory(detectedCategory);
+      setDescription(categoryDescriptions[detectedCategory] || "No description available.");
+      setShowPopup(true);
+      setLoading(false);
+    }, 1000); // 1 second delay to mimic processing
   };
 
   const handleReupload = () => {
     setFile(null);
     setCategory(null);
+    setDescription(null);
     setLoading(false);
+    setShowPopup(false);
   };
 
   return (
@@ -64,7 +92,6 @@ export default function Scan() {
           to determine the correct category for recycling.
         </p>
 
-        {/* Upload area */}
         {!file && (
           <label className="block cursor-pointer">
             <div className="flex flex-col items-center justify-center border-2 border-dashed border-green-400 rounded-2xl p-10 mb-6 hover:bg-green-100 hover:scale-[1.02] transition-transform duration-200 ease-in-out">
@@ -82,7 +109,6 @@ export default function Scan() {
           </label>
         )}
 
-        {/* Image Preview */}
         {file && (
           <>
             <img
@@ -114,16 +140,27 @@ export default function Scan() {
           </>
         )}
 
-        {/* Results */}
-        {category && !loading && (
-          <div className="mt-8">
-            <p className="text-2xl font-semibold text-green-700">
-              Waste Category:{" "}
-              <span className="text-green-900">{category}</span>
-            </p>
-            <p className="mt-3 text-xl font-medium text-green-800">
-              You earned {pointsMap[category] || 0} points for this scan!
-            </p>
+        {showPopup && category && description && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
+              <h3 className="text-2xl font-bold text-green-700 mb-4">{category}</h3>
+              <p className="text-gray-700 mb-6">{description}</p>
+              <button
+                className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl hover:bg-yellow-600 active:scale-95 transition mb-3"
+                onClick={() =>
+                  window.location.href = `/guidance/${encodeURIComponent(category)}`
+                }
+              >
+                Guidance
+              </button>
+       <button
+  className="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-xl hover:bg-yellow-600 active:scale-95 transition mb-3"
+  onClick={() => window.location.href = `/guidance/${encodeURIComponent(category)}`}
+>
+  Guidance
+</button>
+
+            </div>
           </div>
         )}
       </div>

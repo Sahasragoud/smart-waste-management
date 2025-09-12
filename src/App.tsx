@@ -18,7 +18,8 @@ import Uploads from "./pages/Uploads";
 import RewardsAdmin from "./pages/RewardsAdmin.tsx";
 import Leaderboard from "./pages/Leaderboard.tsx";
 import UpdatePassword from "./pages/UpdatePassword.tsx";
-import EditProfile from "./pages/Editprofile.tsx"; 
+import EditProfile from "./pages/EditProfile.tsx"; 
+import GuidancePage from "./pages/Guidancepage";  // ✅ Import your GuidancePage
 
 function App() {
   return (
@@ -38,6 +39,9 @@ function App() {
           <Route path="/results" element={<Results />} />
           <Route path="/centers" element={<Centers />} />
           <Route path="/rewards" element={<Rewards />} />
+
+          {/* ✅ Guidance Route */}
+          <Route path="/guidance/:category" element={<GuidancePage />} />
 
           {/* Leaderboard (protected for both user & admin) */}
           <Route
@@ -88,15 +92,17 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
-  path="/update-password"
-  element={
-    <ProtectedRoute allowedRoles={["user", "admin"]}>
-      <UpdatePassword />
-    </ProtectedRoute>
-  }
-/>
- {/* Edit Profile */}
+            path="/update-password"
+            element={
+              <ProtectedRoute allowedRoles={["user", "admin"]}>
+                <UpdatePassword />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Edit Profile */}
           <Route
             path="/edit-profile"
             element={
