@@ -102,7 +102,7 @@ export default function Uploads() {
       </h2>
 
       {/* 🔍 Search + Sort */}
-      <div className="flex items-center space-x-2 mb-4">
+      <div className="flex items-center justify-center space-x-2 mb-4">
         <input
           type="text"
           placeholder="Search by uploader..."
@@ -153,26 +153,30 @@ export default function Uploads() {
                     <td className="py-3 px-4 font-semibold">{file.fileName}</td>
                     <td className="py-3 px-4">{file.userName}</td>
                     <td className="py-3 px-4">{file.createdAt}</td>
-                    <td className="py-3 px-4 space-x-2">
-                      <button
-                        onClick={() => handleView(file)}
-                        className="px-3 py-1 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => handleReuploadClick(file.id)}
-                        className="px-3 py-1 text-sm bg-yellow-500 text-white rounded-md hover:bg-yellow-600"
-                      >
-                        Reupload
-                      </button>
-                      <button
-                        onClick={() => handleDelete(file.id)}
-                        className="px-3 py-1 text-sm bg-red-500 text-white rounded-md hover:bg-red-600"
-                      >
-                        Delete
-                      </button>
-                    </td>
+                    <td className="py-3 px-4 flex space-x-3">
+                        <button
+                          onClick={() => handleView(file)}
+                          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600"
+                          title="View File"
+                        >
+                          📄
+                        </button>
+                        <button
+                          onClick={() => handleReuploadClick(file.id)}
+                          className="p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600"
+                          title="Reupload"
+                        >
+                          🔄
+                        </button>
+                        <button
+                          onClick={() => handleDelete(file.id)}
+                          className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+                          title="Delete"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+
                   </tr>
                 );
               })

@@ -19,4 +19,4 @@ export const getUploads = (
     sortDirection :string
 ) => API.get(`admin/uploads?page=${page}&size=${size}&sortField=${sortField}&sortDirection=${sortDirection}`);
 
-export const deleteUpload = (uploadId : number) => API.delete(`admin/upload/${uploadId}`);
+export const deleteUpload = (uploadId : number) => API.delete(`uploads/upload/${uploadId}`);

@@ -11,4 +11,13 @@ export const updatePassword = (userId: number,updateFields : UpdatePassword)=> A
 export const updateProfile = (userId : number, updateFields : Partial<UpdateProfile>) => API.put(`users/${userId}/updateProfile`, updateFields);
 export const getUser = (userId : number) => API.get<User>(`users/by-id?id=${userId}`);
 
-export const createUpload = (userId : number) => API.post(`uploads/user/${userId}`)
+
+export const createUpload = (userId: number, file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return API.post(`/uploads/user/${userId}`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+};
+
